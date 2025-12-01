@@ -380,8 +380,8 @@ template.innerHTML = `
   }
 
   .cloud {
-    width: 150px;
-    height: 150px;
+    width: 90px;
+    height: 90px;
   }
 
   .bone {
