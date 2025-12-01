@@ -254,8 +254,8 @@ template.innerHTML = `
       }
 
       .player {
-        width: 95px;
-        height: 95px;
+        width: 80px;
+        height: 80px;
         left: 60px;
       }
 
@@ -813,11 +813,6 @@ customElements.define('milton-jump',
     #levelNameElement
 
     /**
-     * Reference to seeing if user is on mobile
-     */
-    #isMobile
-
-    /**
      * Sets up a new instance of game
      * 
      * @constructor
@@ -847,9 +842,6 @@ customElements.define('milton-jump',
      * Reads attributes and sets up event Listeners.
      */
     connectedCallback() {
-
-      // Idetntify mobile devices
-      this.#isMobile = /Mobi|Android|iPhone|iPad|iPod|Touch/i.test(navigator.userAgent)
       // Reads image and sound from attributes.
       this.#runImage1 = this.getAttribute('run1')
       this.#runImage2 = this.getAttribute('run2')
@@ -1564,12 +1556,6 @@ if (this.#logo1 && this.#logo2) {
 
         //Speed gets faster and faster every 50 points
         const speed = 15 + Math.floor(this.#score / 500)
-
-        // Slower on mobile
-         if (this.#isMobile) {
-          speed = Math.floor(speed * 0.6) // 60% desktop-speed.
-         }
-
         obstacle.x -= speed
         obstacle.element.style.left = `${obstacle.x}px`
 
