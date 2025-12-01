@@ -265,8 +265,8 @@ template.innerHTML = `
       }
 
       .cloud {
-        width: 150px;
-        height: 150px;
+        width: 80px;
+        height: 80px;
       }
 
       .grass {
