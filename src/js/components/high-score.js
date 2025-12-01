@@ -293,6 +293,15 @@ customElements.define('high-score',
       this.#loadHighScores()
       this.#displayHighScores()
 
+      // Fix?
+      this.addEventListener("click", e => e.stopPropagation())
+  this.addEventListener("touchstart", e => e.stopPropagation())
+  this.addEventListener("touchend", e => e.stopPropagation())
+
+  // Prevent submit button from triggering game touch handlers
+  this.#submitBtn.addEventListener("click", e => e.stopPropagation())
+  this.#submitBtn.addEventListener("touchstart", e => e.stopPropagation())
+
       // Submit score listener
       this.#submitBtn.addEventListener('click', () => {
         this.#submitHighScore()
@@ -308,7 +317,7 @@ customElements.define('high-score',
         e.stopPropagation()
         this.#clearScores()
       })
-
+      
       // Enter key to submit
       this.#nameInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
