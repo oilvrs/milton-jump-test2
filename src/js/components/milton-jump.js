@@ -137,6 +137,8 @@ template.innerHTML = `
       font-size: 40px;
       color: #ff0000ff;
       animation: blink 1.5s infinite;
+      margin-top:40px;
+      margin-bottom:-30px;
     }
 
      .bone-text {
@@ -213,17 +215,23 @@ template.innerHTML = `
     }
 
     .level-selector {
-      font-family: "Tiny5", sans-serif;
-      font-size: 35px;
-      color: red;
-      margin-bottom: 60px;
-      display:flex;
-      align-items:center;
-      gap:30px;
-      animation: blink 1.5s infinite;
-      pointer-events: none;
-    }
-    
+  font-family: "Tiny5", sans-serif;
+  font-size: 35px;
+  color: red;
+  margin-bottom: -5px;
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  gap:15px;
+  animation: blink 1.5s infinite;
+  pointer-events: none;
+}
+
+.level-controls {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
 
     .level-arrow {
       cursor:pointer;
@@ -254,10 +262,14 @@ template.innerHTML = `
       }
 
       .player {
-        width: 80px;
-        height: 80px;
-        left: 60px;
+        width: 100px;
+        height: 100px;
+        left: 20px;
       }
+
+       .player.jumping {
+      bottom: calc(30% + 120px); /* Hoppar 150px uppåt från marken */
+    }
 
       .obstacle {
         width: 60px;
@@ -265,8 +277,8 @@ template.innerHTML = `
       }
 
       .cloud {
-        width: 80px;
-        height: 80px;
+        width: 20px;
+        height: 20px;
       }
 
       .grass {
@@ -282,13 +294,14 @@ template.innerHTML = `
 
        .start-logo {
         width: 90%;
-        max-width: 400px;
-        margin-bottom: 20px;  /* ← Mindre på mobil */
+        max-width: 650px;
+        margin-bottom: -20px;  
       }
 
       .start-instruction {
         font-size: 28px;
         text-align:center;
+        margin-top:-20px;
       }
 
       .game-over-text {
@@ -313,16 +326,20 @@ template.innerHTML = `
         left: 10px;
       }
 
-      .level-selector {
-    font-size: 24px;
-    gap: 20px;
-    margin-bottom: 30px;
-  }
-  
-  .level-arrow {
-    font-size: 35px;
-    pointer-events:auto;
-  }
+    .level-selector {
+  font-size: 24px;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.level-controls {
+  gap: 20px;
+}
+
+.level-arrow {
+  font-size: 35px;
+  pointer-events:auto;
+}
   
   .level-name {
     min-width: 150px;
@@ -343,17 +360,23 @@ template.innerHTML = `
 
   .start-instruction {
     font-size: 20px;
+    margin-top:-20px;
   }
 
-  .level-selector {
-    font-size: 22px;
-    gap: 20px;
-    margin-bottom: 40px;
-  }
+ .level-selector {
+  font-size: 24px;
+  gap: 10px;
+  margin-bottom: 30px;
+}
 
-  .level-arrow {
-    font-size: 30px;
-  }
+.level-controls {
+  gap: 20px;
+}
+
+.level-arrow {
+  font-size: 35px;
+  pointer-events:auto;
+}
 
   .level-name {
     min-width: 120px;
@@ -380,8 +403,8 @@ template.innerHTML = `
   }
 
   .cloud {
-    width: 90px;
-    height: 90px;
+    width: 20px;
+    height: 20px;
   }
 
   .bone {
@@ -414,28 +437,39 @@ template.innerHTML = `
     <div class="ground"></div>
     <div class="grass-container"></div>
     <img class="player" alt="Player">
-    <div class="score">score: 0</div>
+    <div class="score">SCORE: 0</div>
     <div class="bone-text"></div>
 
     <!-- Start-skärm -->
     <div class="start-screen">
       <img class="start-logo" src="images/newlogo.png" alt="milton-jump">
 
-    <div class="level-selector">Select Level:
-      <div class="level-arrow left-arrow"><</div>
-      <div class="level-name"></div>
-      <div class="level-arrow right-arrow">></div>
+    <div class="level-selector">
+  <div>LEVEL SELECT:</div>
+  <div class="level-controls">
+    <div class="level-arrow left-arrow">←</div>
+    <div class="level-name"></div>
+    <div class="level-arrow right-arrow">→</div>
   </div>
+</div>
 
-    <div class="start-instruction">PRESS ANYWHERE OR SPACE TO START THE GAME</div>
+    <div class="start-instruction">PRESS TO START GAME</div>
 </div>
 
     <!-- Game Over skärm -->
     <div class="game-over-screen hidden">
       <div class="game-over-text">GAME OVER</div>
       <high-score></high-score>
-      <div class="restart-instruction">press space to try again</div>
-      
+    <div class="level-selector">
+  <div>LEVEL SELECT:</div>
+  <div class="level-controls">
+    <div class="level-arrow left-arrow-go">←</div>
+    <div class="level-name-go"></div>
+    <div class="level-arrow right-arrow-go">→</div>
+  </div>
+</div>
+      <div class="restart-instruction">PRESS TO TRY AGAIN</div>
+
     </div>
   </div>
 `
@@ -813,6 +847,13 @@ customElements.define('milton-jump',
     #levelNameElement
 
     /**
+     * Reference to level name element in GAME OVER
+     * 
+     * @type {HTMLDivElement}
+     */
+    #levelNameElementGO
+
+    /**
      * Sets up a new instance of game
      * 
      * @constructor
@@ -834,6 +875,7 @@ customElements.define('milton-jump',
       this.#gameOverScreen = this.shadowRoot.querySelector('.game-over-screen')
       this.#boneTextElement = this.shadowRoot.querySelector('.bone-text')
       this.#levelNameElement = this.shadowRoot.querySelector('.level-name')
+      this.#levelNameElementGO = this.shadowRoot.querySelector('.level-name-go')
        this.#highScoreComponent = this.shadowRoot.querySelector('high-score')
       this.#startLogo = this.shadowRoot.querySelector('.start-logo')
     }
@@ -927,7 +969,28 @@ if (this.#logo1 && this.#logo2) {
 
       this.shadowRoot.querySelector('.right-arrow').addEventListener('touchstart', (e) => {
         e.preventDefault()
-       e.stopPropagation() // Stoppa bubblingen till game-container
+        e.stopPropagation() // Stoppa bubblingen till game-container
+        this.#changeLevel(1)
+      })
+
+      // Game Over screen level selectors
+      this.shadowRoot.querySelector('.left-arrow-go').addEventListener('click', () => {
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow-go').addEventListener('click', () => {
+        this.#changeLevel(1)
+      })
+
+      this.shadowRoot.querySelector('.left-arrow-go').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow-go').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
         this.#changeLevel(1)
       })
 
@@ -1071,9 +1134,12 @@ if (this.#logo1 && this.#logo2) {
      * Updates the level name display
      * @private
      */
-    #updateLevelDisplay () {
+    #updateLevelDisplay() {
       const themeName = this.#availableThemes[this.#selectedThemeIndex]
       this.#levelNameElement.textContent = themeName.toUpperCase()
+      if (this.#levelNameElementGO) {
+        this.#levelNameElementGO.textContent = themeName.toUpperCase()
+      }
     }
 
     /**
@@ -1204,15 +1270,15 @@ if (this.#logo1 && this.#logo2) {
       }
 
       // For level selector
-      if (this.#gameState === 'WAITING') {
-        if (event.code === 'ArrowLeft') {
-          event.preventDefault()
-          this.#changeLevel(-1)
-        } else if (event.code === 'ArrowRight') {
-          event.preventDefault()
-          this.#changeLevel(1)
-        }
-      }
+     if (this.#gameState === 'WAITING' || this.#gameState === 'GAME_OVER') {
+  if (event.code === 'ArrowLeft') {
+    event.preventDefault()
+    this.#changeLevel(-1)
+  } else if (event.code === 'ArrowRight') {
+    event.preventDefault()
+    this.#changeLevel(1)
+  }
+}
     }
 
     /**
@@ -1224,11 +1290,13 @@ if (this.#logo1 && this.#logo2) {
     #handleTouch(event) {
 
       // If click is on an arrow: 
-      const target = event?.target
-      if (target && (target.classList.contains('left-arrow') || 
-                 target.classList.contains('right-arrow'))) {
-      return 
-    }
+     const target = event?.target
+if (target && (target.classList.contains('left-arrow') || 
+             target.classList.contains('right-arrow') ||
+             target.classList.contains('left-arrow-go') ||
+             target.classList.contains('right-arrow-go'))) {
+  return 
+}
 
       // Different outcomes based on game states:
       if (this.#gameState === 'WAITING') {
@@ -1555,7 +1623,10 @@ if (this.#logo1 && this.#logo2) {
         const obstacle = this.#obstacles[i]
 
         //Speed gets faster and faster every 50 points
-        const speed = 15 + Math.floor(this.#score / 500)
+        // Speed is different if in vertical mobile mode
+        const isMobile = window.innerWidth <= 800 && window.innerHeight > window.innerWidth
+        const baseSpeed = isMobile ? 8 : 15
+        const speed = baseSpeed + Math.floor(this.#score / 500)
         obstacle.x -= speed
         obstacle.element.style.left = `${obstacle.x}px`
 
@@ -1621,7 +1692,10 @@ if (this.#logo1 && this.#logo2) {
         const bone = this.#bones[i]
 
         //Speed gets faster and faster every 50 points
-        const speed = 15 + Math.floor(this.#score / 500)
+        // Also different on mobile
+        const isMobile = window.innerWidth <= 800 && window.innerHeight > window.innerWidth
+        const baseSpeed = isMobile ? 8 : 15
+        const speed = baseSpeed + Math.floor(this.#score / 500)
         bone.x -= speed
         bone.element.style.left = `${bone.x}px`
 
