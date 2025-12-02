@@ -106,6 +106,35 @@ template.innerHTML = `
       animation: float 3s ease-in-out infinite;
     }
 
+    .pre-waiting-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 101;
+    }
+
+    .pre-waiting-screen.hidden {
+      display:none;
+    }
+
+    .pre-waiting-text {
+      font-family: 'Tiny5', sans-serif;
+      font-size:40px;
+      color:red;
+      animation: blink 1.5s infinite;
+      margin-top:20px;
+    }
+
+    .pre-waiting-screen .start-logo {
+      animation: breatheLogo 3s ease-in-out infinite;
+    }
+
     /* Start screen overlay? */
      .start-screen {
       position: absolute;
@@ -128,7 +157,8 @@ template.innerHTML = `
      width: 90%;               
      height: auto; 
      margin-top: -170px;  
-     margin-bottom: -80px;   
+     margin-bottom: -80px;
+     animation: breatheLogo 3s ease-in-out infinite;   
     }
 
      .start-instruction {
@@ -145,7 +175,7 @@ template.innerHTML = `
       position: absolute;
       top: 20px;
       left: 20px;
-      font-family: Arial;
+      font-family: 'Tiny5',  sans-serif;
       font-size: 30px;
       color: red;
       font-weight: 150;
@@ -164,6 +194,15 @@ template.innerHTML = `
       50% { transform: translateY(-30px); }
       100% { transform: translateY(0); }
     }
+
+    @keyframes breatheLogo {
+  0%, 100% { 
+    transform: scale(1);
+  }
+  50% { 
+    transform: scale(1.05);
+  }
+}
 
      /* Game Over skärm */
     .game-over-screen {
@@ -295,7 +334,19 @@ template.innerHTML = `
        .start-logo {
         width: 90%;
         max-width: 650px;
-        margin-bottom: -20px;  
+        margin-bottom: -20px;
+      }
+
+      .pre-waiting-text {
+        font-size: 28px;
+        text-align: center;
+        padding: 0 20px;
+      }
+
+      .pre-waiting-screen .start-logo {
+        width: 90%;
+        max-width: 650px;
+        margin-bottom: 20px;
       }
 
       .start-instruction {
@@ -361,6 +412,18 @@ template.innerHTML = `
   .start-instruction {
     font-size: 20px;
     margin-top:-20px;
+  }
+
+  .pre-waiting-text {
+    font-size: 20px;
+    margin-top: 10px;
+  }
+
+  .pre-waiting-screen .start-logo {
+    width: 70%;
+    max-width: 800px;
+    margin-top: -100px;
+    margin-bottom: -40px;
   }
 
  .level-selector {
@@ -439,10 +502,17 @@ template.innerHTML = `
     <img class="player" alt="Player">
     <div class="score">SCORE: 0</div>
     <div class="bone-text"></div>
+    
+    <div class="pre-waiting-screen">
+        <img class="start-logo" src="images/newlogo.png" alt="milton-jump">
+        <div class="pre-waiting-text">PRESS ANYWHERE TO ENTER</div>
+      </div>
 
     <!-- Start-skärm -->
-    <div class="start-screen">
+    <div class="start-screen hidden">
       <img class="start-logo" src="images/newlogo.png" alt="milton-jump">
+
+      
 
     <div class="level-selector">
   <div>LEVEL SELECT:</div>
@@ -529,7 +599,7 @@ customElements.define('milton-jump',
      * @type {string}
      */
 
-    #gameState = 'WAITING'
+    #gameState = 'PRE_WAITING'
 
     /**
      * Reference to the player icon (image)
@@ -552,6 +622,13 @@ customElements.define('milton-jump',
    * @type {HTMLDivElement}
    */
     #grassContainer
+
+    /**
+     * Reference to pre-waiting-screen
+     * 
+     * @type {HTMLDivElement}
+     */
+    #preWaitingScreen
 
     /**
      * Reference to bone text element
@@ -600,12 +677,26 @@ customElements.define('milton-jump',
     #isJumping = false
 
     /**
-     * sound that plays while you jump
+     * Sound that plays while you jump
      * 
      * @type {HTMLAudioElement}
      */
 
     #jumpSound
+
+    /**
+     * Main menu music
+     * Plays during WAITING stage.
+     * 
+     * @type {HTMLAudioElement}
+     */
+    #mainMenuMusic
+
+    /**
+     * Game theme music 
+     * Plays during PLAYING stage.
+     */
+    #mainThemeMusic
 
     /**
      * sound that plays when you eat a bone
@@ -877,7 +968,8 @@ customElements.define('milton-jump',
       this.#levelNameElement = this.shadowRoot.querySelector('.level-name')
       this.#levelNameElementGO = this.shadowRoot.querySelector('.level-name-go')
        this.#highScoreComponent = this.shadowRoot.querySelector('high-score')
-      this.#startLogo = this.shadowRoot.querySelector('.start-logo')
+      this.#startLogo = this.shadowRoot.querySelector('.start-screen .start-logo')
+      this.#preWaitingScreen = this.shadowRoot.querySelector('.pre-waiting-screen')
     }
 
     /**
@@ -896,6 +988,22 @@ customElements.define('milton-jump',
 
       // Jump avatar
       this.#jumpImage = this.getAttribute('jump')
+
+      // Music (menu and main)
+      const menuMusicSrc = this.getAttribute('music1')
+      if (menuMusicSrc) {
+        this.#mainMenuMusic = new Audio(menuMusicSrc)
+        this.#mainMenuMusic.loop = true
+        this.#mainMenuMusic.volume = 0.6
+      }
+
+      const mainMusicSrc = this.getAttribute('music2')
+      if (mainMusicSrc) {
+        this.#mainThemeMusic = new Audio(mainMusicSrc)
+        this.#mainThemeMusic.loop = true
+        this.#mainThemeMusic.volume = 0.6
+      }
+
 
       // Initial run image (run1)
       if (this.#runImage1) {
@@ -929,17 +1037,17 @@ customElements.define('milton-jump',
 
       // Logo animation:
       this.#logo1 = this.getAttribute('logo1') || 'images/newlogo.png'
-this.#logo2 = this.getAttribute('logo2')
+      this.#logo2 = this.getAttribute('logo2')
 
-// Set initial logo
-if (this.#logo1) {
-  this.#startLogo.src = this.#logo1
-}
+      // Set initial logo
+      if (this.#logo1) {
+        this.#startLogo.src = this.#logo1
+      }
 
-// Start logo animation if we have both images
-if (this.#logo1 && this.#logo2) {
-  this.#startLogoAnimation()
-}
+      // Start logo animation if we have both images
+      if (this.#logo1 && this.#logo2) {
+        this.#startLogoAnimation()
+      }
 
       // Theme set up for levels
       const initalTheme = this.getAttribute('theme') || 'default'
@@ -1015,6 +1123,39 @@ if (this.#logo1 && this.#logo2) {
       this.#startCloudAnimation()
     }
 
+    /**
+     * Moves from PRE_WAITING to WAITING
+     * @private
+     */
+    #enterWaitingState () {
+      this.#gameState = 'WAITING'
+      this.#preWaitingScreen.classList.add('hidden')
+      this.#startScreen.classList.remove('hidden')
+      this.#updateMusic()
+    }
+
+    /**
+     * Handles music in application.
+     */
+    #updateMusic() {
+      // Stop both songs.
+      if (this.#mainMenuMusic) this.#mainMenuMusic.pause();
+      if (this.#mainThemeMusic) this.#mainThemeMusic.pause();
+
+      if (this.#gameState === 'WAITING' ) {
+        if (this.#mainMenuMusic) {
+          this.#mainMenuMusic.currentTime = 0;
+          this.#mainMenuMusic.play().catch(() => { });
+        }
+      }
+
+      if (this.#gameState === 'PLAYING') {
+        if (this.#mainThemeMusic) {
+          this.#mainThemeMusic.currentTime = 0;
+          this.#mainThemeMusic.play().catch(() => { });
+        }
+      }
+    }
     /**
      * Applies the selected theme.
      * @private
@@ -1205,7 +1346,7 @@ if (this.#logo1 && this.#logo2) {
       this.#startLogo.src = this.#logo1
       this.#currentLogoFrame = 1
     }
-  }, 1000) // Byter bild varje sekund
+  }, 1100) // Byter bild varje sekund
 }
 
     /**
@@ -1251,6 +1392,12 @@ if (this.#logo1 && this.#logo2) {
      * @private
      */
     #handleKeyPress(event) {
+      // Check for PRE_WAITING state first
+      if (this.#gameState === 'PRE_WAITING') {
+        event.preventDefault()
+        this.#enterWaitingState()
+        return
+      }
       // Check if pressed key was space
       // event.code is the name of the key that was pressed
       if (event.code === 'Space') {
@@ -1290,14 +1437,18 @@ if (this.#logo1 && this.#logo2) {
     #handleTouch(event) {
 
       // If click is on an arrow: 
-     const target = event?.target
-if (target && (target.classList.contains('left-arrow') || 
-             target.classList.contains('right-arrow') ||
-             target.classList.contains('left-arrow-go') ||
-             target.classList.contains('right-arrow-go'))) {
-  return 
-}
-
+      const target = event?.target
+      if (target && (target.classList.contains('left-arrow') ||
+        target.classList.contains('right-arrow') ||
+        target.classList.contains('left-arrow-go') ||
+        target.classList.contains('right-arrow-go'))) {
+        return
+      }
+      // Check for PRE WAITING state first
+      if (this.#gameState === 'PRE_WAITING') {
+    this.#enterWaitingState()
+    return
+  }
       // Different outcomes based on game states:
       if (this.#gameState === 'WAITING') {
         // Start game
@@ -1319,6 +1470,9 @@ if (target && (target.classList.contains('left-arrow') ||
     #startGame() {
       // Change state
       this.#gameState = 'PLAYING'
+
+      // Start music
+      this.#updateMusic()
 
       // Hide start screen
       this.#startScreen.classList.add('hidden')
@@ -1625,7 +1779,7 @@ if (target && (target.classList.contains('left-arrow') ||
         //Speed gets faster and faster every 50 points
         // Speed is different if in vertical mobile mode
         const isMobile = window.innerWidth <= 800 && window.innerHeight > window.innerWidth
-        const baseSpeed = isMobile ? 8 : 15
+        const baseSpeed = isMobile ? 6 : 15
         const speed = baseSpeed + Math.floor(this.#score / 500)
         obstacle.x -= speed
         obstacle.element.style.left = `${obstacle.x}px`
@@ -1822,6 +1976,9 @@ if (target && (target.classList.contains('left-arrow') ||
      */
     #gameOver() {
       this.#gameState = 'GAME_OVER'
+
+      // Stop music
+      this.#updateMusic()
 
       // Stop sprite animation
       this.#stopSpriteAnimation()
