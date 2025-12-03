@@ -4,7 +4,7 @@
   "description": "A fun jumping game with Milton",
   "start_url": "./index.html",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#6dcff6",
   "theme_color": "#62bc2f",
   "orientation": "any",
