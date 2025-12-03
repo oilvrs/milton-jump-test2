@@ -2,12 +2,12 @@
   "name": "Milton Jump Game",
   "short_name": "Milton Jump",
   "description": "A fun jumping game with Milton",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/",
+  "scope": "/",
   "display": "fullscreen",
   "background_color": "#6dcff6",
   "theme_color": "#62bc2f",
-  "orientation": "any",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "images/icon-192.png",
@@ -22,4 +22,4 @@
       "purpose": "any maskable"
     }
   ]
-}s
+}
