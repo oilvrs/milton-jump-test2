@@ -971,11 +971,14 @@ customElements.define('milton-jump',
       this.#startLogo = this.shadowRoot.querySelector('.start-screen .start-logo')
       this.#preWaitingScreen = this.shadowRoot.querySelector('.pre-waiting-screen')
     }
-
     /**
      * Reads attributes and sets up event Listeners.
      */
     connectedCallback() {
+
+      this.#preWaitingScreen.addEventListener('touchstart', this.#enterApp.bind(this), { passive: false });
+this.#preWaitingScreen.addEventListener('click', this.#enterApp.bind(this));
+this.#preWaitingScreen.addEventListener('pointerdown', this.#enterApp.bind(this));
       // Reads image and sound from attributes.
       this.#runImage1 = this.getAttribute('run1')
       this.#runImage2 = this.getAttribute('run2')
@@ -988,20 +991,6 @@ customElements.define('milton-jump',
 
       // Jump avatar
       this.#jumpImage = this.getAttribute('jump')
-
-      // Ios fix
-       this.#preWaitingScreen.addEventListener('click', () => {
-    if (this.#gameState === 'PRE_WAITING') {
-      this.#enterWaitingState()
-    }
-  })
-
-  this.#preWaitingScreen.addEventListener('touchstart', (e) => {
-    e.preventDefault()
-    if (this.#gameState === 'PRE_WAITING') {
-      this.#enterWaitingState()
-    }
-  })
 
       // Music (menu and main)
       const menuMusicSrc = this.getAttribute('music1')
@@ -1174,6 +1163,27 @@ customElements.define('milton-jump',
         }
       }
     }
+
+    /**
+     * Enter app
+     * 
+     * @private
+     */
+    #enterApp(e) {
+  e.preventDefault();
+
+  if (this.#gameState !== 'PRE_WAITING') return;
+
+  this.#gameState = 'WAITING';
+  this.#preWaitingScreen.classList.add('hidden');
+  this.#startScreen.classList.remove('hidden');
+
+  // Unlock audio for iOS Safari
+  if (this.#mainMenuMusic) {
+      this.#mainMenuMusic.play().catch(() => {});
+  }
+}
+
     /**
      * Applies the selected theme.
      * @private
