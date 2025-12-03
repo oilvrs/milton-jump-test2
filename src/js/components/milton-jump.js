@@ -989,6 +989,20 @@ customElements.define('milton-jump',
       // Jump avatar
       this.#jumpImage = this.getAttribute('jump')
 
+      // Ios fix
+       this.#preWaitingScreen.addEventListener('click', () => {
+    if (this.#gameState === 'PRE_WAITING') {
+      this.#enterWaitingState()
+    }
+  })
+
+  this.#preWaitingScreen.addEventListener('touchstart', (e) => {
+    e.preventDefault()
+    if (this.#gameState === 'PRE_WAITING') {
+      this.#enterWaitingState()
+    }
+  })
+
       // Music (menu and main)
       const menuMusicSrc = this.getAttribute('music1')
       if (menuMusicSrc) {
@@ -1096,6 +1110,8 @@ customElements.define('milton-jump',
         this.#changeLevel(-1)
       })
 
+      
+
       this.shadowRoot.querySelector('.right-arrow-go').addEventListener('touchstart', (e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -1116,6 +1132,8 @@ customElements.define('milton-jump',
         event.preventDefault()
         this.#handleTouch(event)
       })
+
+      
 
       // Initializes the clouds and the grass (present even i WAITING mode)
       this.#initializeGrass()
