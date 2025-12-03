@@ -263,7 +263,7 @@ template.innerHTML = `
   align-items:center;
   gap:15px;
   animation: blink 1.5s infinite;
-  pointer-events: none;
+ 
 }
 
 .level-controls {
@@ -1128,7 +1128,16 @@ this.#preWaitingScreen.addEventListener('pointerdown', this.#enterApp.bind(this)
       this.#initializeGrass()
       this.#startGrassSpriteAnimation()
       this.#startCloudAnimation()
+      this.#updateLevelName()
     }
+
+    #updateLevelName() {
+  this.#levelNameElement.textContent =
+    this.#availableThemes[this.#selectedThemeIndex].toUpperCase();
+
+  this.#levelNameElementGO.textContent =
+    this.#availableThemes[this.#selectedThemeIndex].toUpperCase();
+}
 
     /**
      * Moves from PRE_WAITING to WAITING
