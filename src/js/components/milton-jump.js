@@ -11,11 +11,8 @@ import './high-score.js'
 const template = document.createElement('template')
 template.innerHTML = `
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
-    @font-face {
-  font-family: "Tiny5";
-  src: url("./fonts/Tiny5.ttf") format("truetype");
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
+    /* Hela spelområdet */
 
     :host {
     display: block;
@@ -975,7 +972,6 @@ customElements.define('milton-jump',
       this.#preWaitingScreen = this.shadowRoot.querySelector('.pre-waiting-screen')
     }
 
-  
     /**
      * Reads attributes and sets up event Listeners.
      */
@@ -1131,37 +1127,13 @@ customElements.define('milton-jump',
      * Moves from PRE_WAITING to WAITING
      * @private
      */
-    async #enterWaitingState () {
+    #enterWaitingState () {
       this.#gameState = 'WAITING'
       this.#preWaitingScreen.classList.add('hidden')
       this.#startScreen.classList.remove('hidden')
-
-      // Load music now if not loaded
-      if (!this.#mainMenuMusic) {
-    const menuMusicSrc = this.getAttribute('music1')
-    if (menuMusicSrc) {
-      this.#mainMenuMusic = await this.#loadAudio(menuMusicSrc)
-    }
-  }
       this.#updateMusic()
     }
 
-    /**
-     * Loads audio files dynamically
-     * @param {string} src - Audio file path
-     * @returns {Promise<HTMLAudioElement>}
-     * @private
-     */
-    #loadAudio(src) {
-      return new Promise((resolve) => {
-        const audio = new Audio()
-        audio.addEventListener('canplaythrough', () => resolve(audio), { once: true })
-        audio.loop = true
-        audio.volume = 0.6
-        audio.src = src
-      })
-    }
-    
     /**
      * Handles music in application.
      */
@@ -1456,36 +1428,48 @@ customElements.define('milton-jump',
 }
     }
 
+    /**
+     * Handles touch/click for mobile units
+     * same logic as handleKeyPress but for touch
+     * 
+     * @private
+     */
+    #handleTouch(event) {
 
-#handleTouch(event) {
- // Will only handle jump, other states are handeled by event listeners.
-     if (this.#gameState === 'WAITING') {
-          // Start game
-          this.#startGame()
-        } else if (this.#gameState === 'PLAYING') {
-          // Jump
-          this.#jump()
-        } else if (this.#gameState === 'GAME_OVER') {
-          this.#restartGame()
-        }
-}
+      // If click is on an arrow: 
+      const target = event?.target
+      if (target && (target.classList.contains('left-arrow') ||
+        target.classList.contains('right-arrow') ||
+        target.classList.contains('left-arrow-go') ||
+        target.classList.contains('right-arrow-go'))) {
+        return
+      }
+      // Check for PRE WAITING state first
+      if (this.#gameState === 'PRE_WAITING') {
+    this.#enterWaitingState()
+    return
+  }
+      // Different outcomes based on game states:
+      if (this.#gameState === 'WAITING') {
+        // Start game
+        this.#startGame()
+      } else if (this.#gameState === 'PLAYING') {
+        // Jump
+        this.#jump()
+      } else if (this.#gameState === 'GAME_OVER') {
+        this.#restartGame()
+      }
+    }
+
     /**
      * Starts the game.
      * Hides the startsecreen and initializes game loop.
      * 
      * @private
      */
-    async #startGame() {
+    #startGame() {
       // Change state
       this.#gameState = 'PLAYING'
-
-      // Load main theme if not loaded
-      if (!this.#mainThemeMusic) {
-    const mainMusicSrc = this.getAttribute('music2')
-    if (mainMusicSrc) {
-      this.#mainThemeMusic = await this.#loadAudio(mainMusicSrc)
-    }
-  }
 
       // Start music
       this.#updateMusic()
