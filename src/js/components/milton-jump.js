@@ -263,7 +263,7 @@ template.innerHTML = `
   align-items:center;
   gap:15px;
   animation: blink 1.5s infinite;
- 
+  pointer-events: none;
 }
 
 .level-controls {
@@ -975,10 +975,6 @@ customElements.define('milton-jump',
      * Reads attributes and sets up event Listeners.
      */
     connectedCallback() {
-
-      this.#preWaitingScreen.addEventListener('touchstart', this.#enterApp.bind(this), { passive: false });
-this.#preWaitingScreen.addEventListener('click', this.#enterApp.bind(this));
-this.#preWaitingScreen.addEventListener('pointerdown', this.#enterApp.bind(this));
       // Reads image and sound from attributes.
       this.#runImage1 = this.getAttribute('run1')
       this.#runImage2 = this.getAttribute('run2')
@@ -1128,16 +1124,7 @@ this.#preWaitingScreen.addEventListener('pointerdown', this.#enterApp.bind(this)
       this.#initializeGrass()
       this.#startGrassSpriteAnimation()
       this.#startCloudAnimation()
-      this.#updateLevelName()
     }
-
-    #updateLevelName() {
-  this.#levelNameElement.textContent =
-    this.#availableThemes[this.#selectedThemeIndex].toUpperCase();
-
-  this.#levelNameElementGO.textContent =
-    this.#availableThemes[this.#selectedThemeIndex].toUpperCase();
-}
 
     /**
      * Moves from PRE_WAITING to WAITING
@@ -1172,27 +1159,6 @@ this.#preWaitingScreen.addEventListener('pointerdown', this.#enterApp.bind(this)
         }
       }
     }
-
-    /**
-     * Enter app
-     * 
-     * @private
-     */
-    #enterApp(e) {
-  e.preventDefault();
-
-  if (this.#gameState !== 'PRE_WAITING') return;
-
-  this.#gameState = 'WAITING';
-  this.#preWaitingScreen.classList.add('hidden');
-  this.#startScreen.classList.remove('hidden');
-
-  // Unlock audio for iOS Safari
-  if (this.#mainMenuMusic) {
-      this.#mainMenuMusic.play().catch(() => {});
-  }
-}
-
     /**
      * Applies the selected theme.
      * @private
