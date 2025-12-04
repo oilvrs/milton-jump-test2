@@ -8,7 +8,11 @@
 const template = document.createElement('template')
 template.innerHTML = `
   <style>
-
+ 
+@font-face {
+  font-family: "Tiny5";
+  src: url("./fonts/Tiny5.ttf") format("truetype");
+}
 
 @keyframes blink {
       0%, 50%, 100% { opacity: 1; }

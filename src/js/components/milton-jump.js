@@ -12,6 +12,10 @@ const template = document.createElement('template')
 template.innerHTML = `
   <style>
     
+    @font-face {
+  font-family: "Tiny5";
+  src: url("./fonts/Tiny5.ttf") format("truetype");
+    }
 
     :host {
     display: block;
@@ -262,7 +266,7 @@ template.innerHTML = `
   align-items:center;
   gap:15px;
   animation: blink 1.5s infinite;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .level-controls {
