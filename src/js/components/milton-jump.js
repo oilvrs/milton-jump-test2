@@ -1132,19 +1132,23 @@ customElements.define('milton-jump',
      * @private
      */
     #enterWaitingState () {
-      this.#gameState = 'WAITING'
-      this.#preWaitingScreen.classList.add('hidden')
-      this.#startScreen.classList.remove('hidden')
-
-      // Load music now if not loaded
-      if (!this.#mainMenuMusic) {
+  this.#gameState = 'WAITING'
+  this.#preWaitingScreen.classList.add('hidden')
+  this.#startScreen.classList.remove('hidden')
+  
+  // Ladda musik i bakgrunden om den inte är laddad
+  if (!this.#mainMenuMusic) {
     const menuMusicSrc = this.getAttribute('music1')
     if (menuMusicSrc) {
-      this.#mainMenuMusic = this.#loadAudio(menuMusicSrc)
+      this.#loadAudio(menuMusicSrc).then(audio => {
+        this.#mainMenuMusic = audio
+        this.#updateMusic()
+      })
     }
+  } else {
+    this.#updateMusic()
   }
-      this.#updateMusic()
-    }
+}
 
     /**
      * Loads audio files dynamically
