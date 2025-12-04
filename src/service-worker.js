@@ -22,11 +22,7 @@ const urlsToCache = [
   'images/trashcan.png',
 
   // Original image list (kept in full)
-  'images/run1.png',
-  'images/run2.png',
-  'images/run3.png',
-  'images/jump.png',
-  'images/eat.png',
+ 
   'images/bush.png',
   'images/cloud.png',
   'images/mountains1.png',
@@ -43,10 +39,6 @@ const urlsToCache = [
   'audio/miltonbark.mp3',
   'audio/eat.mp3',
 
-  // Original audio list (kept)
-  'audio/jump.mp3',
-  'audio/menu.mp3',
-  'audio/main.mp3'
 ]
 
 // Install event

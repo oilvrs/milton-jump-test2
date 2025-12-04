@@ -11,8 +11,11 @@ import './high-score.js'
 const template = document.createElement('template')
 template.innerHTML = `
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
-    /* Hela spelområdet */
+    
+    @font-face {
+  font-family: "Tiny5";
+  src: url("./fonts/Tiny5.ttf") format("truetype");
+    }
 
     :host {
     display: block;
@@ -994,19 +997,8 @@ customElements.define('milton-jump',
       this.#jumpImage = this.getAttribute('jump')
 
       // Music (menu and main)
-      const menuMusicSrc = this.getAttribute('music1')
-      if (menuMusicSrc) {
-        this.#mainMenuMusic = new Audio(menuMusicSrc)
-        this.#mainMenuMusic.loop = true
-        this.#mainMenuMusic.volume = 0.6
-      }
-
-      const mainMusicSrc = this.getAttribute('music2')
-      if (mainMusicSrc) {
-        this.#mainThemeMusic = new Audio(mainMusicSrc)
-        this.#mainThemeMusic.loop = true
-        this.#mainThemeMusic.volume = 0.6
-      }
+     this.#mainMenuMusic = null
+     this.#mainThemeMusic = null
 
       // Initial run image (run1)
       if (this.#runImage1) {
@@ -1021,7 +1013,7 @@ customElements.define('milton-jump',
       const eatSrc = this.getAttribute('eat')
       if (eatSrc) {
         this.#eatSound = new Audio(eatSrc)
-      }
+      } 
 
       const obstacleSrc = this.getAttribute('obstacle')
       if (obstacleSrc) {
@@ -1165,18 +1157,41 @@ customElements.define('milton-jump',
     })
   }
 }
-
     /**
      * Moves from PRE_WAITING to WAITING
      * @private
      */
-    #enterWaitingState () {
+    async #enterWaitingState () {
       this.#gameState = 'WAITING'
       this.#preWaitingScreen.classList.add('hidden')
       this.#startScreen.classList.remove('hidden')
+
+      // Load music now if not loaded
+      if (!this.#mainMenuMusic) {
+    const menuMusicSrc = this.getAttribute('music1')
+    if (menuMusicSrc) {
+      this.#mainMenuMusic = await this.#loadAudio(menuMusicSrc)
+    }
+  }
       this.#updateMusic()
     }
 
+    /**
+     * Loads audio files dynamically
+     * @param {string} src - Audio file path
+     * @returns {Promise<HTMLAudioElement>}
+     * @private
+     */
+    #loadAudio(src) {
+      return new Promise((resolve) => {
+        const audio = new Audio()
+        audio.addEventListener('canplaythrough', () => resolve(audio), { once: true })
+        audio.loop = true
+        audio.volume = 0.6
+        audio.src = src
+      })
+    }
+    
     /**
      * Handles music in application.
      */
@@ -1514,9 +1529,17 @@ customElements.define('milton-jump',
      * 
      * @private
      */
-    #startGame() {
+    async #startGame() {
       // Change state
       this.#gameState = 'PLAYING'
+
+      // Load main theme if not loaded
+      if (!this.#mainThemeMusic) {
+    const mainMusicSrc = this.getAttribute('music2')
+    if (mainMusicSrc) {
+      this.#mainThemeMusic = await this.#loadAudio(mainMusicSrc)
+    }
+  }
 
       // Start music
       this.#updateMusic()

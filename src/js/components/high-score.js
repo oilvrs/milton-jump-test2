@@ -8,9 +8,13 @@
 const template = document.createElement('template')
 template.innerHTML = `
   <style>
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
- @keyframes blink {
+ 
+@font-face {
+  font-family: "Tiny5";
+  src: url("./fonts/Tiny5.ttf") format("truetype");
+}
+
+@keyframes blink {
       0%, 50%, 100% { opacity: 1; }
       25%, 75% { opacity: 0.3; }
     }
