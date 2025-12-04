@@ -119,7 +119,7 @@ template.innerHTML = `
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 100;
+      z-index: 101;
     }
 
     .pre-waiting-screen.hidden {
@@ -1120,19 +1120,6 @@ customElements.define('milton-jump',
         event.preventDefault()
         this.#handleTouch(event)
       })
-
-      this.#preWaitingScreen.addEventListener('click', () => {
-  if (this.#gameState === 'PRE_WAITING') {
-    this.#enterWaitingState()
-  }
-})
-
-this.#preWaitingScreen.addEventListener('touchstart', (e) => {
-  e.preventDefault()
-  if (this.#gameState === 'PRE_WAITING') {
-    this.#enterWaitingState()
-  }
-})
 
       // Initializes the clouds and the grass (present even i WAITING mode)
       this.#initializeGrass()
