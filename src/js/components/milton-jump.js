@@ -975,14 +975,11 @@ customElements.define('milton-jump',
       this.#preWaitingScreen = this.shadowRoot.querySelector('.pre-waiting-screen')
     }
 
+  
     /**
      * Reads attributes and sets up event Listeners.
      */
     connectedCallback() {
-      // Wait until DOM is ready
-      setTimeout(() => {
-        this.#setupEventListeners()
-      }, 0)
       // Reads image and sound from attributes.
       this.#runImage1 = this.getAttribute('run1')
       this.#runImage2 = this.getAttribute('run2')
@@ -997,8 +994,20 @@ customElements.define('milton-jump',
       this.#jumpImage = this.getAttribute('jump')
 
       // Music (menu and main)
-     this.#mainMenuMusic = null
-     this.#mainThemeMusic = null
+      const menuMusicSrc = this.getAttribute('music1')
+      if (menuMusicSrc) {
+        this.#mainMenuMusic = new Audio(menuMusicSrc)
+        this.#mainMenuMusic.loop = true
+        this.#mainMenuMusic.volume = 0.6
+      }
+
+      const mainMusicSrc = this.getAttribute('music2')
+      if (mainMusicSrc) {
+        this.#mainThemeMusic = new Audio(mainMusicSrc)
+        this.#mainThemeMusic.loop = true
+        this.#mainThemeMusic.volume = 0.6
+      }
+
 
       // Initial run image (run1)
       if (this.#runImage1) {
@@ -1013,7 +1022,7 @@ customElements.define('milton-jump',
       const eatSrc = this.getAttribute('eat')
       if (eatSrc) {
         this.#eatSound = new Audio(eatSrc)
-      } 
+      }
 
       const obstacleSrc = this.getAttribute('obstacle')
       if (obstacleSrc) {
@@ -1054,77 +1063,69 @@ customElements.define('milton-jump',
       this.#updateLevelDisplay()
       this.#loadThemeImages()
 
+      // Add level query selector listeners
+      this.shadowRoot.querySelector('.left-arrow').addEventListener('click', () => {
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow').addEventListener('click', () => {
+        this.#changeLevel(1)
+      })
+
+      // Fix arrows on ios
+      this.shadowRoot.querySelector('.left-arrow').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation() // Stoppa bubblingen till game-container
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation() // Stoppa bubblingen till game-container
+        this.#changeLevel(1)
+      })
+
+      // Game Over screen level selectors
+      this.shadowRoot.querySelector('.left-arrow-go').addEventListener('click', () => {
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow-go').addEventListener('click', () => {
+        this.#changeLevel(1)
+      })
+
+      this.shadowRoot.querySelector('.left-arrow-go').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow-go').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        this.#changeLevel(1)
+      })
+
+      // Listen to button presses
+      document.addEventListener('keydown', (event) => {
+        this.#handleKeyPress(event)
+      })
+
+      // Touch / click support for ios
+      this.#gameContainer.addEventListener('click', () => {
+        this.#handleTouch()
+      })
+
+      this.#gameContainer.addEventListener('touchstart', (event) => {
+        event.preventDefault()
+        this.#handleTouch(event)
+      })
+
       // Initializes the clouds and the grass (present even i WAITING mode)
       this.#initializeGrass()
       this.#startGrassSpriteAnimation()
       this.#startCloudAnimation()
     }
-
-
-    /**
-     * Sets up all event listeners
-     * @private
-     */
-    #setupEventListeners() {
-  // Keyboard controls
-  document.addEventListener('keydown', (event) => {
-    this.#handleKeyPress(event)
-  })
-
-  // Detect touch vs mouse
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-  const eventType = isTouchDevice ? 'touchend' : 'click'
-
-  // Level selector arrows - Start screen
-  const leftArrow = this.shadowRoot.querySelector('.left-arrow')
-  const rightArrow = this.shadowRoot.querySelector('.right-arrow')
-  
-  if (leftArrow) {
-    leftArrow.addEventListener(eventType, (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(-1)
-    })
-  }
-
-  if (rightArrow) {
-    rightArrow.addEventListener(eventType, (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(1)
-    })
-  }
-
-  // Level selector arrows - Game Over screen
-  const leftArrowGO = this.shadowRoot.querySelector('.left-arrow-go')
-  const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
-  
-  if (leftArrowGO) {
-    leftArrowGO.addEventListener(eventType, (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(-1)
-    })
-  }
-
-  if (rightArrowGO) {
-    rightArrowGO.addEventListener(eventType, (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(1)
-    })
-  }
-
-  // Main game container - handles all game interactions
-  if (this.#gameContainer) {
-    this.#gameContainer.addEventListener(eventType, (event) => {
-      if (isTouchDevice) {
-        event.preventDefault()
-      }
-      this.#handleTouch(event)
-    })
-  }
-}
 
     /**
      * Moves from PRE_WAITING to WAITING
