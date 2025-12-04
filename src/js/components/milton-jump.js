@@ -975,11 +975,14 @@ customElements.define('milton-jump',
       this.#preWaitingScreen = this.shadowRoot.querySelector('.pre-waiting-screen')
     }
 
-  
     /**
      * Reads attributes and sets up event Listeners.
      */
     connectedCallback() {
+      // Wait until DOM is ready
+      setTimeout(() => {
+        this.#setupEventListeners()
+      }, 0)
       // Reads image and sound from attributes.
       this.#runImage1 = this.getAttribute('run1')
       this.#runImage2 = this.getAttribute('run2')
@@ -994,20 +997,8 @@ customElements.define('milton-jump',
       this.#jumpImage = this.getAttribute('jump')
 
       // Music (menu and main)
-      const menuMusicSrc = this.getAttribute('music1')
-      if (menuMusicSrc) {
-        this.#mainMenuMusic = new Audio(menuMusicSrc)
-        this.#mainMenuMusic.loop = true
-        this.#mainMenuMusic.volume = 0.6
-      }
-
-      const mainMusicSrc = this.getAttribute('music2')
-      if (mainMusicSrc) {
-        this.#mainThemeMusic = new Audio(mainMusicSrc)
-        this.#mainThemeMusic.loop = true
-        this.#mainThemeMusic.volume = 0.6
-      }
-
+     this.#mainMenuMusic = null
+     this.#mainThemeMusic = null
 
       // Initial run image (run1)
       if (this.#runImage1) {
@@ -1022,7 +1013,7 @@ customElements.define('milton-jump',
       const eatSrc = this.getAttribute('eat')
       if (eatSrc) {
         this.#eatSound = new Audio(eatSrc)
-      }
+      } 
 
       const obstacleSrc = this.getAttribute('obstacle')
       if (obstacleSrc) {
@@ -1063,64 +1054,6 @@ customElements.define('milton-jump',
       this.#updateLevelDisplay()
       this.#loadThemeImages()
 
-      // Add level query selector listeners
-      this.shadowRoot.querySelector('.left-arrow').addEventListener('click', () => {
-        this.#changeLevel(-1)
-      })
-
-      this.shadowRoot.querySelector('.right-arrow').addEventListener('click', () => {
-        this.#changeLevel(1)
-      })
-
-      // Fix arrows on ios
-      this.shadowRoot.querySelector('.left-arrow').addEventListener('touchstart', (e) => {
-        e.preventDefault()
-        e.stopPropagation() // Stoppa bubblingen till game-container
-        this.#changeLevel(-1)
-      })
-
-      this.shadowRoot.querySelector('.right-arrow').addEventListener('touchstart', (e) => {
-        e.preventDefault()
-        e.stopPropagation() // Stoppa bubblingen till game-container
-        this.#changeLevel(1)
-      })
-
-      // Game Over screen level selectors
-      this.shadowRoot.querySelector('.left-arrow-go').addEventListener('click', () => {
-        this.#changeLevel(-1)
-      })
-
-      this.shadowRoot.querySelector('.right-arrow-go').addEventListener('click', () => {
-        this.#changeLevel(1)
-      })
-
-      this.shadowRoot.querySelector('.left-arrow-go').addEventListener('touchstart', (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        this.#changeLevel(-1)
-      })
-
-      this.shadowRoot.querySelector('.right-arrow-go').addEventListener('touchstart', (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        this.#changeLevel(1)
-      })
-
-      // Listen to button presses
-      document.addEventListener('keydown', (event) => {
-        this.#handleKeyPress(event)
-      })
-
-      // Touch / click support for ios
-      this.#gameContainer.addEventListener('click', () => {
-        this.#handleTouch()
-      })
-
-      this.#gameContainer.addEventListener('touchstart', (event) => {
-        event.preventDefault()
-        this.#handleTouch(event)
-      })
-
       // Initializes the clouds and the grass (present even i WAITING mode)
       this.#initializeGrass()
       this.#startGrassSpriteAnimation()
@@ -1128,27 +1061,120 @@ customElements.define('milton-jump',
     }
 
     /**
+     * Sets up all event listeners
+     * @private
+     */
+    #setupEventListeners() {
+  // Add level query selector listeners
+  const leftArrow = this.shadowRoot.querySelector('.left-arrow')
+  const rightArrow = this.shadowRoot.querySelector('.right-arrow')
+  const leftArrowGO = this.shadowRoot.querySelector('.left-arrow-go')
+  const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
+
+  if (leftArrow) {
+    leftArrow.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.#changeLevel(-1)
+    })
+    leftArrow.addEventListener('touchstart', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.#changeLevel(-1)
+    }, { passive: false })
+  }
+
+  if (rightArrow) {
+    rightArrow.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.#changeLevel(1)
+    })
+    rightArrow.addEventListener('touchstart', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.#changeLevel(1)
+    }, { passive: false })
+  }
+
+  // Game Over screen level selectors
+  if (leftArrowGO) {
+    leftArrowGO.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.#changeLevel(-1)
+    })
+    leftArrowGO.addEventListener('touchstart', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.#changeLevel(-1)
+    }, { passive: false })
+  }
+
+  if (rightArrowGO) {
+    rightArrowGO.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.#changeLevel(1)
+    })
+    rightArrowGO.addEventListener('touchstart', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.#changeLevel(1)
+    }, { passive: false })
+  }
+
+  // Listen to button presses
+  document.addEventListener('keydown', (event) => {
+    this.#handleKeyPress(event)
+  })
+
+  // Touch / click support - använd både click och touchend för bättre kompatibilitet
+  if (this.#gameContainer) {
+    // Använd touchend istället för touchstart för bättre responsivitet
+    this.#gameContainer.addEventListener('touchend', (event) => {
+      event.preventDefault()
+      this.#handleTouch(event)
+    }, { passive: false })
+
+    // Behåll click för desktop
+    this.#gameContainer.addEventListener('click', (event) => {
+      this.#handleTouch(event)
+    })
+  }
+
+  // Special handling för pre-waiting screen
+  if (this.#preWaitingScreen) {
+    this.#preWaitingScreen.addEventListener('touchend', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (this.#gameState === 'PRE_WAITING') {
+        this.#enterWaitingState()
+      }
+    }, { passive: false })
+
+    this.#preWaitingScreen.addEventListener('click', (e) => {
+      e.stopPropagation()
+      if (this.#gameState === 'PRE_WAITING') {
+        this.#enterWaitingState()
+      }
+    })
+  }
+}
+    /**
      * Moves from PRE_WAITING to WAITING
      * @private
      */
-    #enterWaitingState () {
-  this.#gameState = 'WAITING'
-  this.#preWaitingScreen.classList.add('hidden')
-  this.#startScreen.classList.remove('hidden')
-  
-  // Ladda musik i bakgrunden om den inte är laddad
-  if (!this.#mainMenuMusic) {
+    async #enterWaitingState () {
+      this.#gameState = 'WAITING'
+      this.#preWaitingScreen.classList.add('hidden')
+      this.#startScreen.classList.remove('hidden')
+
+      // Load music now if not loaded
+      if (!this.#mainMenuMusic) {
     const menuMusicSrc = this.getAttribute('music1')
     if (menuMusicSrc) {
-      this.#loadAudio(menuMusicSrc).then(audio => {
-        this.#mainMenuMusic = audio
-        this.#updateMusic()
-      })
+      this.#mainMenuMusic = await this.#loadAudio(menuMusicSrc)
     }
-  } else {
-    this.#updateMusic()
   }
-}
+      this.#updateMusic()
+    }
 
     /**
      * Loads audio files dynamically
@@ -1460,31 +1486,50 @@ customElements.define('milton-jump',
 }
     }
 
-
-#handleTouch(event) {
- // Will only handle jump, other states are handeled by event listeners.
-
-   if (this.#gameState === 'PRE_WAITING') {
-    this.#enterWaitingState()
+    /**
+     * Handles touch/click for mobile units
+     * same logic as handleKeyPress but for touch
+     * 
+     * @private
+     */
+    #handleTouch(event) {
+ // If click is on an arrow, ignore it here (handled separately)
+  const target = event?.target
+  if (target && (target.classList.contains('left-arrow') ||
+    target.classList.contains('right-arrow') ||
+    target.classList.contains('left-arrow-go') ||
+    target.classList.contains('right-arrow-go') ||
+    target.classList.contains('level-name') ||
+    target.classList.contains('level-name-go') ||
+    target.classList.contains('level-selector') ||
+    target.classList.contains('level-controls'))) {
     return
   }
-     if (this.#gameState === 'WAITING') {
-          // Start game
-          this.#startGame()
-        } else if (this.#gameState === 'PLAYING') {
-          // Jump
-          this.#jump()
-        } else if (this.#gameState === 'GAME_OVER') {
-          this.#restartGame()
-        }
+
+  // Check for PRE WAITING state first - hanteras nu i setupEventListeners
+  if (this.#gameState === 'PRE_WAITING') {
+    return
+  }
+
+  // Different outcomes based on game states:
+  if (this.#gameState === 'WAITING') {
+    // Start game
+    this.#startGame()
+  } else if (this.#gameState === 'PLAYING') {
+    // Jump
+    this.#jump()
+  } else if (this.#gameState === 'GAME_OVER') {
+    this.#restartGame()
+  }
 }
+
     /**
      * Starts the game.
      * Hides the startsecreen and initializes game loop.
      * 
      * @private
      */
-    #startGame() {
+    async #startGame() {
       // Change state
       this.#gameState = 'PLAYING'
 
@@ -1492,13 +1537,8 @@ customElements.define('milton-jump',
       if (!this.#mainThemeMusic) {
     const mainMusicSrc = this.getAttribute('music2')
     if (mainMusicSrc) {
-      this.#loadAudio(mainMusicSrc).then(audio => {
-        this.#mainThemeMusic = audio
-        this.#updateMusic()
-      })
+      this.#mainThemeMusic = await this.#loadAudio(mainMusicSrc)
     }
-  } else {
-    this.#updateMusic()
   }
 
       // Start music

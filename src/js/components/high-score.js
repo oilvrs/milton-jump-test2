@@ -298,9 +298,9 @@ customElements.define('high-score',
       this.#displayHighScores()
 
       // Fix?
-     // this.addEventListener("click", e => e.stopPropagation())
- // this.addEventListener("touchstart", e => e.stopPropagation())
-  //this.addEventListener("touchend", e => e.stopPropagation())
+     this.addEventListener("click", e => e.stopPropagation())
+ this.addEventListener("touchstart", e => e.stopPropagation())
+  this.addEventListener("touchend", e => e.stopPropagation())
 
   // Prevent submit button from triggering game touch handlers
   this.#submitBtn.addEventListener("click", e => e.stopPropagation())
