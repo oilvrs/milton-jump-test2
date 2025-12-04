@@ -1116,6 +1116,15 @@ customElements.define('milton-jump',
   if (this.#gameContainer) {
     if (isTouchDevice) {
       this.#gameContainer.addEventListener('touchend', (event) => {
+        // Ignore touches on level selector components
+        const target = event.target
+        if (target && (
+          target.closest('.level-selector') || 
+          target.closest('.start-screen') ||
+          target.closest('.game-over-screen')
+        )) {
+          return
+        }
         event.preventDefault()
         this.#handleTouch(event)
       }, { passive: false })
@@ -1136,6 +1145,58 @@ customElements.define('milton-jump',
           this.#enterWaitingState()
         }
       }, { passive: false })
+      // Special handling for start screen
+  if (this.#startScreen) {
+    if (isTouchDevice) {
+      this.#startScreen.addEventListener('touchend', (e) => {
+        // Only handle if not clicking on level selector
+        if (e.target.closest('.level-selector')) {
+          return
+        }
+        e.preventDefault()
+        e.stopPropagation()
+        if (this.#gameState === 'WAITING') {
+          this.#startGame()
+        }
+      }, { passive: false })
+    } else {
+      this.#startScreen.addEventListener('click', (e) => {
+        if (e.target.closest('.level-selector')) {
+          return
+        }
+        e.stopPropagation()
+        if (this.#gameState === 'WAITING') {
+          this.#startGame()
+        }
+      })
+    }
+  }
+
+  // Special handling for game over screen
+  if (this.#gameOverScreen) {
+    if (isTouchDevice) {
+      this.#gameOverScreen.addEventListener('touchend', (e) => {
+        if (e.target.closest('.level-selector')) {
+          return
+        }
+        e.preventDefault()
+        e.stopPropagation()
+        if (this.#gameState === 'GAME_OVER') {
+          this.#restartGame()
+        }
+      }, { passive: false })
+    } else {
+      this.#gameOverScreen.addEventListener('click', (e) => {
+        if (e.target.closest('.level-selector')) {
+          return
+        }
+        e.stopPropagation()
+        if (this.#gameState === 'GAME_OVER') {
+          this.#restartGame()
+        }
+      })
+    }
+  }
     } else {
       this.#preWaitingScreen.addEventListener('click', (e) => {
         e.stopPropagation()
@@ -1476,41 +1537,11 @@ customElements.define('milton-jump',
 }
     }
 #handleTouch(event) {
-  // If click is on level selector or its children, ignore it
-  const target = event?.target
-  if (target) {
-    // Check if target or any parent is part of level selector
-    const levelSelector = target.closest('.level-selector')
-    if (levelSelector) {
-      return
-    }
-    
-    // Also check for arrows specifically (in case they're outside level-selector)
-    if (target.classList.contains('left-arrow') ||
-        target.classList.contains('right-arrow') ||
-        target.classList.contains('left-arrow-go') ||
-        target.classList.contains('right-arrow-go')) {
-      return
-    }
-  }
-
-  // Check for PRE WAITING state first - hanteras nu i setupEventListeners
-  if (this.#gameState === 'PRE_WAITING') {
-    return
-  }
-
-  // Different outcomes based on game states:
-  if (this.#gameState === 'WAITING') {
-    // Start game
-    this.#startGame()
-  } else if (this.#gameState === 'PLAYING') {
-    // Jump
+ // Will only handle jump, other states are handeled by event listeners.
+    if (this.#gameState === 'PLAYING') {
     this.#jump()
-  } else if (this.#gameState === 'GAME_OVER') {
-    this.#restartGame()
   }
 }
-
     /**
      * Starts the game.
      * Hides the startsecreen and initializes game loop.
