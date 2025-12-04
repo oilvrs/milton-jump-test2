@@ -1538,8 +1538,16 @@ customElements.define('milton-jump',
     }
 #handleTouch(event) {
  // Will only handle jump, other states are handeled by event listeners.
-    if (this.#gameState === 'PLAYING') {
-    this.#jump()
+    // Different outcomes based on game states:
+        if (this.#gameState === 'WAITING') {
+          // Start game
+          this.#startGame()
+        } else if (this.#gameState === 'PLAYING') {
+          // Jump
+          this.#jump()
+        } else if (this.#gameState === 'GAME_OVER') {
+          this.#restartGame()
+        }
   }
 }
     /**
