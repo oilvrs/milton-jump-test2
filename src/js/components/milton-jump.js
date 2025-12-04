@@ -1066,145 +1066,63 @@ customElements.define('milton-jump',
      * @private
      */
     #setupEventListeners() {
-  // Add level query selector listeners
-  const leftArrow = this.shadowRoot.querySelector('.left-arrow')
-  const rightArrow = this.shadowRoot.querySelector('.right-arrow')
-  const leftArrowGO = this.shadowRoot.querySelector('.left-arrow-go')
-  const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
-
-  if (leftArrow) {
-    leftArrow.addEventListener('touchstart', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(-1)
-    }, { passive: false })
-  }
-
-  if (rightArrow) {
-    rightArrow.addEventListener('touchstart', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(1)
-    }, { passive: false })
-  }
-
-  // Game Over screen level selectors
-  if (leftArrowGO) {
-    leftArrowGO.addEventListener('touchstart', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(-1)
-    }, { passive: false })
-  }
-
-  if (rightArrowGO) {
-    rightArrowGO.addEventListener('touchstart', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(1)
-    }, { passive: false })
-  }
-
-  // Listen to button presses
+  // Keyboard controls
   document.addEventListener('keydown', (event) => {
     this.#handleKeyPress(event)
   })
 
-  // Touch / click support - använd ANTINGEN touch ELLER click, inte både
+  // Detect touch vs mouse
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  const eventType = isTouchDevice ? 'touchend' : 'click'
+
+  // Level selector arrows - Start screen
+  const leftArrow = this.shadowRoot.querySelector('.left-arrow')
+  const rightArrow = this.shadowRoot.querySelector('.right-arrow')
   
+  if (leftArrow) {
+    leftArrow.addEventListener(eventType, (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.#changeLevel(-1)
+    })
+  }
+
+  if (rightArrow) {
+    rightArrow.addEventListener(eventType, (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.#changeLevel(1)
+    })
+  }
+
+  // Level selector arrows - Game Over screen
+  const leftArrowGO = this.shadowRoot.querySelector('.left-arrow-go')
+  const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
+  
+  if (leftArrowGO) {
+    leftArrowGO.addEventListener(eventType, (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.#changeLevel(-1)
+    })
+  }
+
+  if (rightArrowGO) {
+    rightArrowGO.addEventListener(eventType, (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.#changeLevel(1)
+    })
+  }
+
+  // Main game container - handles all game interactions
   if (this.#gameContainer) {
-    if (isTouchDevice) {
-      this.#gameContainer.addEventListener('touchend', (event) => {
-        // Ignore touches on level selector components
-        const target = event.target
-        if (target && (
-          target.closest('.level-selector') || 
-          target.closest('.start-screen') ||
-          target.closest('.game-over-screen')
-        )) {
-          return
-        }
+    this.#gameContainer.addEventListener(eventType, (event) => {
+      if (isTouchDevice) {
         event.preventDefault()
-        this.#handleTouch(event)
-      }, { passive: false })
-    } else {
-      this.#gameContainer.addEventListener('click', (event) => {
-        this.#handleTouch(event)
-      })
-    }
-  }
-
-  // Special handling för pre-waiting screen
-  if (this.#preWaitingScreen) {
-    if (isTouchDevice) {
-      this.#preWaitingScreen.addEventListener('touchend', (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        if (this.#gameState === 'PRE_WAITING') {
-          this.#enterWaitingState()
-        }
-      }, { passive: false })
-      // Special handling for start screen
-  if (this.#startScreen) {
-    if (isTouchDevice) {
-      this.#startScreen.addEventListener('touchend', (e) => {
-        // Only handle if not clicking on level selector
-        if (e.target.closest('.level-selector')) {
-          return
-        }
-        e.preventDefault()
-        e.stopPropagation()
-        if (this.#gameState === 'WAITING') {
-          this.#startGame()
-        }
-      }, { passive: false })
-    } else {
-      this.#startScreen.addEventListener('click', (e) => {
-        if (e.target.closest('.level-selector')) {
-          return
-        }
-        e.stopPropagation()
-        if (this.#gameState === 'WAITING') {
-          this.#startGame()
-        }
-      })
-    }
-  }
-
-  // Special handling for game over screen
-  if (this.#gameOverScreen) {
-    if (isTouchDevice) {
-      this.#gameOverScreen.addEventListener('touchend', (e) => {
-        if (e.target.closest('.level-selector')) {
-          return
-        }
-        e.preventDefault()
-        e.stopPropagation()
-        if (this.#gameState === 'GAME_OVER') {
-          this.#restartGame()
-        }
-      }, { passive: false })
-    } else {
-      this.#gameOverScreen.addEventListener('click', (e) => {
-        if (e.target.closest('.level-selector')) {
-          return
-        }
-        e.stopPropagation()
-        if (this.#gameState === 'GAME_OVER') {
-          this.#restartGame()
-        }
-      })
-    }
-  }
-    } else {
-      this.#preWaitingScreen.addEventListener('click', (e) => {
-        e.stopPropagation()
-        if (this.#gameState === 'PRE_WAITING') {
-          this.#enterWaitingState()
-        }
-      })
-    }
+      }
+      this.#handleTouch(event)
+    })
   }
 }
 
@@ -1536,6 +1454,8 @@ customElements.define('milton-jump',
   }
 }
     }
+
+
 #handleTouch(event) {
  // Will only handle jump, other states are handeled by event listeners.
      if (this.#gameState === 'WAITING') {
