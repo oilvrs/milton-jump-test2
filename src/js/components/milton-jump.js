@@ -11,7 +11,7 @@ import './high-score.js'
 const template = document.createElement('template')
 template.innerHTML = `
   <style>
-    
+    @import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
     @font-face {
   font-family: "Tiny5";
   src: url("./fonts/Tiny5.ttf") format("truetype");
@@ -1060,6 +1060,7 @@ customElements.define('milton-jump',
       this.#startCloudAnimation()
     }
 
+
     /**
      * Sets up all event listeners
      * @private
@@ -1072,10 +1073,6 @@ customElements.define('milton-jump',
   const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
 
   if (leftArrow) {
-    leftArrow.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.#changeLevel(-1)
-    })
     leftArrow.addEventListener('touchstart', (e) => {
       e.preventDefault()
       e.stopPropagation()
@@ -1084,10 +1081,6 @@ customElements.define('milton-jump',
   }
 
   if (rightArrow) {
-    rightArrow.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.#changeLevel(1)
-    })
     rightArrow.addEventListener('touchstart', (e) => {
       e.preventDefault()
       e.stopPropagation()
@@ -1097,10 +1090,6 @@ customElements.define('milton-jump',
 
   // Game Over screen level selectors
   if (leftArrowGO) {
-    leftArrowGO.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.#changeLevel(-1)
-    })
     leftArrowGO.addEventListener('touchstart', (e) => {
       e.preventDefault()
       e.stopPropagation()
@@ -1109,10 +1098,6 @@ customElements.define('milton-jump',
   }
 
   if (rightArrowGO) {
-    rightArrowGO.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.#changeLevel(1)
-    })
     rightArrowGO.addEventListener('touchstart', (e) => {
       e.preventDefault()
       e.stopPropagation()
@@ -1125,38 +1110,43 @@ customElements.define('milton-jump',
     this.#handleKeyPress(event)
   })
 
-  // Touch / click support - använd både click och touchend för bättre kompatibilitet
+  // Touch / click support - använd ANTINGEN touch ELLER click, inte både
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  
   if (this.#gameContainer) {
-    // Använd touchend istället för touchstart för bättre responsivitet
-    this.#gameContainer.addEventListener('touchend', (event) => {
-      event.preventDefault()
-      this.#handleTouch(event)
-    }, { passive: false })
-
-    // Behåll click för desktop
-    this.#gameContainer.addEventListener('click', (event) => {
-      this.#handleTouch(event)
-    })
+    if (isTouchDevice) {
+      this.#gameContainer.addEventListener('touchend', (event) => {
+        event.preventDefault()
+        this.#handleTouch(event)
+      }, { passive: false })
+    } else {
+      this.#gameContainer.addEventListener('click', (event) => {
+        this.#handleTouch(event)
+      })
+    }
   }
 
   // Special handling för pre-waiting screen
   if (this.#preWaitingScreen) {
-    this.#preWaitingScreen.addEventListener('touchend', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      if (this.#gameState === 'PRE_WAITING') {
-        this.#enterWaitingState()
-      }
-    }, { passive: false })
-
-    this.#preWaitingScreen.addEventListener('click', (e) => {
-      e.stopPropagation()
-      if (this.#gameState === 'PRE_WAITING') {
-        this.#enterWaitingState()
-      }
-    })
+    if (isTouchDevice) {
+      this.#preWaitingScreen.addEventListener('touchend', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (this.#gameState === 'PRE_WAITING') {
+          this.#enterWaitingState()
+        }
+      }, { passive: false })
+    } else {
+      this.#preWaitingScreen.addEventListener('click', (e) => {
+        e.stopPropagation()
+        if (this.#gameState === 'PRE_WAITING') {
+          this.#enterWaitingState()
+        }
+      })
+    }
   }
 }
+
     /**
      * Moves from PRE_WAITING to WAITING
      * @private
@@ -1485,25 +1475,23 @@ customElements.define('milton-jump',
   }
 }
     }
-
-    /**
-     * Handles touch/click for mobile units
-     * same logic as handleKeyPress but for touch
-     * 
-     * @private
-     */
-    #handleTouch(event) {
- // If click is on an arrow, ignore it here (handled separately)
+#handleTouch(event) {
+  // If click is on level selector or its children, ignore it
   const target = event?.target
-  if (target && (target.classList.contains('left-arrow') ||
-    target.classList.contains('right-arrow') ||
-    target.classList.contains('left-arrow-go') ||
-    target.classList.contains('right-arrow-go') ||
-    target.classList.contains('level-name') ||
-    target.classList.contains('level-name-go') ||
-    target.classList.contains('level-selector') ||
-    target.classList.contains('level-controls'))) {
-    return
+  if (target) {
+    // Check if target or any parent is part of level selector
+    const levelSelector = target.closest('.level-selector')
+    if (levelSelector) {
+      return
+    }
+    
+    // Also check for arrows specifically (in case they're outside level-selector)
+    if (target.classList.contains('left-arrow') ||
+        target.classList.contains('right-arrow') ||
+        target.classList.contains('left-arrow-go') ||
+        target.classList.contains('right-arrow-go')) {
+      return
+    }
   }
 
   // Check for PRE WAITING state first - hanteras nu i setupEventListeners
