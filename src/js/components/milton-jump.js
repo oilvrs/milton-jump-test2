@@ -1144,7 +1144,7 @@ this.#preWaitingScreen.addEventListener('touchstart', (e) => {
      * Moves from PRE_WAITING to WAITING
      * @private
      */
-    async #enterWaitingState () {
+    #enterWaitingState () {
       this.#gameState = 'WAITING'
       this.#preWaitingScreen.classList.add('hidden')
       this.#startScreen.classList.remove('hidden')
@@ -1153,7 +1153,7 @@ this.#preWaitingScreen.addEventListener('touchstart', (e) => {
       if (!this.#mainMenuMusic) {
     const menuMusicSrc = this.getAttribute('music1')
     if (menuMusicSrc) {
-      this.#mainMenuMusic = await this.#loadAudio(menuMusicSrc)
+      this.#mainMenuMusic = this.#loadAudio(menuMusicSrc)
     }
   }
       this.#updateMusic()
@@ -1493,7 +1493,7 @@ this.#preWaitingScreen.addEventListener('touchstart', (e) => {
      * 
      * @private
      */
-    async #startGame() {
+    #startGame() {
       // Change state
       this.#gameState = 'PLAYING'
 
@@ -1501,8 +1501,13 @@ this.#preWaitingScreen.addEventListener('touchstart', (e) => {
       if (!this.#mainThemeMusic) {
     const mainMusicSrc = this.getAttribute('music2')
     if (mainMusicSrc) {
-      this.#mainThemeMusic = await this.#loadAudio(mainMusicSrc)
+      this.#loadAudio(mainMusicSrc).then(audio => {
+        this.#mainThemeMusic = audio
+        this.#updateMusic()
+      })
     }
+  } else {
+    this.#updateMusic()
   }
 
       // Start music
