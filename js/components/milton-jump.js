@@ -11,10 +11,12 @@ import './high-score.js'
 const template = document.createElement('template')
 template.innerHTML = `
   <style>
-    @font-face {
+   @font-face {
   font-family: "Tiny5";
-  src: url("./fonts/Tiny5.ttf") format("truetype");
-    }
+  src: url("../../fonts/Tiny5-Regular.woff2") format("woff2"),
+       url("../../fonts/Tiny5-Regular.ttf") format("truetype");
+  font-display: swap;
+}
 
     :host {
     display: block;

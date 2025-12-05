@@ -11,7 +11,9 @@ template.innerHTML = `
  
 @font-face {
   font-family: "Tiny5";
-  src: url("./fonts/Tiny5.ttf") format("truetype");
+  src: url("../../fonts/Tiny5-Regular.woff2") format("woff2"),
+       url("../../fonts/Tiny5-Regular.ttf") format("truetype");
+  font-display: swap;
 }
 
 @keyframes blink {
