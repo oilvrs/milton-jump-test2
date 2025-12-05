@@ -1744,12 +1744,18 @@ customElements.define('milton-jump',
         return
       }
 
+
+
       // Mark that we are jumping right now
       this.#isJumping = true
 
       // Switch to jump avatar
       if (this.#jumpImage) {
         this.#playerElement.src = this.#jumpImage
+      }
+
+      if (this.#gameState === 'WAITING') {
+        this.#startGame()
       }
 
       // Play the jump sound on jump
