@@ -11,11 +11,8 @@ import './high-score.js'
 const template = document.createElement('template')
 template.innerHTML = `
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
-    @font-face {
-  font-family: "Tiny5";
-  src: url("./fonts/Tiny5.ttf") format("truetype");
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
+    /* Hela spelområdet */
 
     :host {
     display: block;
@@ -180,28 +177,32 @@ template.innerHTML = `
       left: 20px;
       font-family: 'Tiny5',  sans-serif;
       font-size: 30px;
-      animation: colorchange 1s steps(1) infinite;
+      color: red;
       font-weight: 150;
       z-index: 10;
       opacity: 0;
       transition: opacity 0.5s;
     }
 
-     @keyframes blink { 0%, 50%, 100% { opacity: 1; } 25%, 75% { opacity: 0.3; }
+     @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0.3; }
     }
 
-     @keyframes float { 0% { transform: translateY(0); }
+     @keyframes float {
+      0% { transform: translateY(0); }
       50% { transform: translateY(-30px); }
       100% { transform: translateY(0); }
     }
 
-    @keyframes breatheLogo { 0%, 100% { 
-    transform: scale(1); } 50% { transform: scale(1.05);}
+    @keyframes breatheLogo {
+  0%, 100% { 
+    transform: scale(1);
+  }
+  50% { 
+    transform: scale(1.05);
+  }
 }
-
-@keyframes colorchange { 0% { color: red; } 25% { color: blue; } 50% { color: rgba(247, 198, 38, 1); }
-        75% { color: rgba(19, 169, 54, 1); } 100% { color: red; }
-    }
 
      /* Game Over skärm */
     .game-over-screen {
@@ -591,60 +592,362 @@ customElements.define('milton-jump',
     }
 
     #currentTheme = null
+
+    /**
+     * GAME STATE - 'waiting', 'playing', 'game_over'
+     * 
+     * @type {string}
+     */
+
     #gameState = 'PRE_WAITING'
+
+    /**
+     * Reference to the player icon (image)
+     * 
+     * @type {HTMLImageElement}
+     */
+
     #playerElement
+
+    /**
+     * Reference to game container.
+     * 
+     * @type {HTMLDivElement}
+     */
     #gameContainer
+
+    /**
+   * Reference to grass container.
+   * 
+   * @type {HTMLDivElement}
+   */
     #grassContainer
+
+    /**
+     * Reference to pre-waiting-screen
+     * 
+     * @type {HTMLDivElement}
+     */
     #preWaitingScreen
+
+    /**
+     * Reference to bone text element
+     * 
+     * @type {HTMLDivElement}
+     */
     #boneTextElement
-    #startLogo
-    #logo1
-    #logo2
-    #currentLogoFrame = 1
-    #logoIntervalId
+
+    /**
+ * Reference to start logo element.
+ * @type {HTMLImageElement}
+ */
+#startLogo
+
+/**
+ * Image src for logo 1.
+ * @type {string}
+ */
+#logo1
+
+/**
+ * Image src for logo 2.
+ * @type {string}
+ */
+#logo2
+
+/**
+ * Current logo frame (1 or 2)
+ * @type {number}
+ */
+#currentLogoFrame = 1
+
+/**
+ * Interval ID for logo animation
+ * @type {number}
+ */
+#logoIntervalId
+
+    /**
+     * Keeps track on if player is jumping
+     * If true - player cannot jump again (no double jumping allowed)
+     * 
+     * @type {HTMLImageElement}
+     */
+
     #isJumping = false
+
+    /**
+     * Sound that plays while you jump
+     * 
+     * @type {HTMLAudioElement}
+     */
+
     #jumpSound
+
+    /**
+     * Main menu music
+     * Plays during WAITING stage.
+     * 
+     * @type {HTMLAudioElement}
+     */
     #mainMenuMusic
+
+    /**
+     * Game theme music 
+     * Plays during PLAYING stage.
+     */
     #mainThemeMusic
+
+    /**
+     * sound that plays when you eat a bone
+     * 
+     * @type {HTMLAudioElement}
+     */
     #eatSound
+
+    /**
+     * Array with obstacles present on screen.
+     * 
+     * @type {Array<{element: HTMLImageElement, x: number}>}
+     */
     #obstacles = []
+
+    /**
+     * Array with grass.
+     * 
+     * @type {Array<{element: HTMLImageElement, x: number}>}
+     */
     #grass = []
+
+    /**
+     * Array with bones giving extra points.
+     * 
+     * @type {Array<{element: HTMLImageElement, x: number}>}
+     */
     #bones = []
+
+    /**
+     * Array with all clouds
+     * 
+     * @type {Array<{element: HTMLImageElement, x: number}>}
+     */
     #clouds = []
+
+    /**
+     * Array with all grass sprites
+     * 
+     * @type {Array<{element: HTMLImageElement, x: number}>}
+     */
     #grassSprites = []
+
+    /**
+     * Reference to high-score component
+     * @type {HTMLElement}
+     */
     #highScoreComponent
+
+    /**
+     * SRC for obstacles image
+     * 
+     * @type {string}
+     */
     #obstacleImage
+
+    /**
+     * SRC for bones image.
+     * 
+     * @type {string}
+     */
     #boneImage
+
+    /**
+     * SRC for grass image 1.
+     * 
+     * @type {string}
+     */
     #grassImage1
+
+    /**
+     * SRC for grass image 2.
+     * @type {string}
+     */
     #grassImage2
+
+    /**
+     * SRC for cloud image
+     * 
+     * @type {string}
+     */
     #cloudImage
+
+    /**
+     * Image src for run avatar 1.
+     * 
+     * @type {string}
+     */
     #runImage1
+
+    /**
+     * Image src for run avatar 2.
+     * 
+     * @type {string}
+     */
     #runImage2
+
+    /**
+     * Image src for run avatar 3.
+     * 
+     * @type {string}
+     */
     #runImage3
+
+    /**
+     * Image src for jump avatar.
+     * 
+     * @type {string}
+     */
     #jumpImage
+
+    /**
+     * Image src for eating
+     * 
+     * @private
+     */
     #eatImage
+
+    /**
+     * What run frame is displayed right now. (1 or 2)
+     * 
+     * @type {number}
+     */
     #currentRunFrame = 0
+
+    /**
+     * What grass image is displayed right now. (1 or 2)
+     * 
+     * @type {number}
+     */
     #currentGrassFrame = 1
+
+    /**
+     * Interval-id for sprite animation
+     * 
+     * @type {number}
+     */
     #spriteIntervalId
+
+    /**
+     * Interval-id for grass animation.
+     * 
+     * @type {number}
+     */
     #grassSpriteIntervalId
+
+    /**
+     * Interval id for when grass should scroll.
+     * 
+     * @type {number}
+     */
     #grassScrollIntervalId
+
+    /**
+     * ID for animation frame (used to stop game loop)
+     * 
+     * @type {number}
+     */
     #animationFrameId
+
+    /**
+     * ID for cloud animation frame
+     * 
+     * @type {number}
+     */
     #cloudAnimationId
+
+    /**
+     * Timestamp for next obstacle.
+     * 
+     * @type {number}
+     */
     #nextObstacleTime = 0
+
+    /**
+     * Timestamp for next bone.
+     * 
+     * @type {number}
+     */
     #nextBoneTime = 0
+
+    /**
+     * Timestamp for next cloud.
+     * 
+     * @type {number}
+     */
     #nextCloudTime = 0
+    /**
+     * Score tracker
+     * 
+     * @type {number}
+     */
     #score = 0
+
+    /**
+     * Reference to score element
+     * 
+     * @type {HTMLDivElement}
+     */
     #scoreElement
+
+    /**
+     * Fast mode
+     * 
+     * @type {string}
+     */
     #fastMode
+
+    /**
+     * Reference to start screen
+     * 
+     * @type {HTMLDivElement}
+     */
     #startScreen
+
+    /**
+     * Reference to GAME OVER screen
+     * 
+     * @type {HTMLDivElement}
+     */
     #gameOverScreen
+
+    /**
+     * Avaliable themes
+     * @type {Array<string>}
+     */
     #availableThemes = ['default', 'mountains', 'desert', 'city']
+
+    /**
+     * Current selected theme index
+     * @type {number}
+     */
     #selectedThemeIndex = 0
+
+    /**
+     * Reference to level name element.
+     * @type {HTMLDivElement}
+     */
     #levelNameElement
+
+    /**
+     * Reference to level name element in GAME OVER
+     * 
+     * @type {HTMLDivElement}
+     */
     #levelNameElementGO
 
     /**
-     * Creates instance of MILTON_JUMP
+     * Sets up a new instance of game
+     * 
+     * @constructor
      */
     constructor() {
       super()
@@ -664,7 +967,7 @@ customElements.define('milton-jump',
       this.#boneTextElement = this.shadowRoot.querySelector('.bone-text')
       this.#levelNameElement = this.shadowRoot.querySelector('.level-name')
       this.#levelNameElementGO = this.shadowRoot.querySelector('.level-name-go')
-      this.#highScoreComponent = this.shadowRoot.querySelector('high-score')
+       this.#highScoreComponent = this.shadowRoot.querySelector('high-score')
       this.#startLogo = this.shadowRoot.querySelector('.start-screen .start-logo')
       this.#preWaitingScreen = this.shadowRoot.querySelector('.pre-waiting-screen')
     }
@@ -673,20 +976,34 @@ customElements.define('milton-jump',
      * Reads attributes and sets up event Listeners.
      */
     connectedCallback() {
-      // Wait until DOM is ready
-      setTimeout(() => {
-        this.#setupEventListeners()
-      }, 0)
       // Reads image and sound from attributes.
       this.#runImage1 = this.getAttribute('run1')
       this.#runImage2 = this.getAttribute('run2')
       this.#runImage3 = this.getAttribute('run3')
       this.#eatImage = this.getAttribute('eatimage')
+
+      // Grass images
       this.#grassImage1 = this.getAttribute('grass1')
       this.#grassImage2 = this.getAttribute('grass2')
+
+      // Jump avatar
       this.#jumpImage = this.getAttribute('jump')
-      this.#mainMenuMusic = null
-      this.#mainThemeMusic = null
+
+      // Music (menu and main)
+      const menuMusicSrc = this.getAttribute('music1')
+      if (menuMusicSrc) {
+        this.#mainMenuMusic = new Audio(menuMusicSrc)
+        this.#mainMenuMusic.loop = true
+        this.#mainMenuMusic.volume = 0.6
+      }
+
+      const mainMusicSrc = this.getAttribute('music2')
+      if (mainMusicSrc) {
+        this.#mainThemeMusic = new Audio(mainMusicSrc)
+        this.#mainThemeMusic.loop = true
+        this.#mainThemeMusic.volume = 0.6
+      }
+
 
       // Initial run image (run1)
       if (this.#runImage1) {
@@ -742,6 +1059,64 @@ customElements.define('milton-jump',
       this.#updateLevelDisplay()
       this.#loadThemeImages()
 
+      // Add level query selector listeners
+      this.shadowRoot.querySelector('.left-arrow').addEventListener('click', () => {
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow').addEventListener('click', () => {
+        this.#changeLevel(1)
+      })
+
+      // Fix arrows on ios
+      this.shadowRoot.querySelector('.left-arrow').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation() // Stoppa bubblingen till game-container
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation() // Stoppa bubblingen till game-container
+        this.#changeLevel(1)
+      })
+
+      // Game Over screen level selectors
+      this.shadowRoot.querySelector('.left-arrow-go').addEventListener('click', () => {
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow-go').addEventListener('click', () => {
+        this.#changeLevel(1)
+      })
+
+      this.shadowRoot.querySelector('.left-arrow-go').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        this.#changeLevel(-1)
+      })
+
+      this.shadowRoot.querySelector('.right-arrow-go').addEventListener('touchstart', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        this.#changeLevel(1)
+      })
+
+      // Listen to button presses
+      document.addEventListener('keydown', (event) => {
+        this.#handleKeyPress(event)
+      })
+
+      // Touch / click support for ios
+      this.#gameContainer.addEventListener('click', () => {
+        this.#handleTouch()
+      })
+
+      this.#gameContainer.addEventListener('touchstart', (event) => {
+        event.preventDefault()
+        this.#handleTouch(event)
+      })
+
       // Initializes the clouds and the grass (present even i WAITING mode)
       this.#initializeGrass()
       this.#startGrassSpriteAnimation()
@@ -749,87 +1124,14 @@ customElements.define('milton-jump',
     }
 
     /**
-     * Sets up all event listeners
-     * @private
-     */
-    #setupEventListeners() {
-      const leftArrow = this.shadowRoot.querySelector('.left-arrow')
-      const rightArrow = this.shadowRoot.querySelector('.right-arrow')
-      const leftArrowGO = this.shadowRoot.querySelector('.left-arrow-go')
-      const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
-
-      const bindArrow = (el, direction) => {
-        if (!el) return
-        el.addEventListener("pointerdown", (e) => {
-          e.stopPropagation()
-          this.#changeLevel(direction)
-        })
-      }
-
-      bindArrow(leftArrow, -1)
-      bindArrow(rightArrow, 1)
-      bindArrow(leftArrowGO, -1)
-      bindArrow(rightArrowGO, 1)
-
-      // Keyboard
-      document.addEventListener('keydown', (event) => {
-        this.#handleKeyPress(event)
-      })
-
-      // Game container touch/click → ersatt av pointerdown
-      if (this.#gameContainer) {
-        this.#gameContainer.addEventListener("pointerdown", (e) => {
-          this.#handleTouch(e)
-        })
-      }
-
-      // Pre-waiting screen
-      if (this.#preWaitingScreen) {
-        this.#preWaitingScreen.addEventListener("pointerdown", (e) => {
-          e.stopPropagation()
-          if (this.#gameState === 'PRE_WAITING') {
-            this.#enterWaitingState()
-          }
-        })
-      }
-    }
-    /**
      * Moves from PRE_WAITING to WAITING
      * @private
      */
-    async #enterWaitingState() {
+    #enterWaitingState () {
       this.#gameState = 'WAITING'
       this.#preWaitingScreen.classList.add('hidden')
       this.#startScreen.classList.remove('hidden')
-
-      // Load music now if not loaded
-      if (!this.#mainMenuMusic) {
-        const menuMusicSrc = this.getAttribute('music1')
-        if (menuMusicSrc) {
-          this.#mainMenuMusic = await this.#loadAudio(menuMusicSrc)
-        }
-      }
-
-      // Delay music start slightly to ensure it plays on mobile
-      setTimeout(() => {
-        this.#updateMusic()
-      }, 100)
-    }
-
-    /**
-     * Loads audio files dynamically
-     * @param {string} src - Audio file path
-     * @returns {Promise<HTMLAudioElement>}
-     * @private
-     */
-    #loadAudio(src) {
-      return new Promise((resolve) => {
-        const audio = new Audio()
-        audio.addEventListener('canplaythrough', () => resolve(audio), { once: true })
-        audio.loop = true
-        audio.volume = 0.6
-        audio.src = src
-      })
+      this.#updateMusic()
     }
 
     /**
@@ -840,7 +1142,7 @@ customElements.define('milton-jump',
       if (this.#mainMenuMusic) this.#mainMenuMusic.pause();
       if (this.#mainThemeMusic) this.#mainThemeMusic.pause();
 
-      if (this.#gameState === 'WAITING') {
+      if (this.#gameState === 'WAITING' ) {
         if (this.#mainMenuMusic) {
           this.#mainMenuMusic.currentTime = 0;
           this.#mainMenuMusic.play().catch(() => { });
@@ -858,7 +1160,7 @@ customElements.define('milton-jump',
      * Applies the selected theme.
      * @private
      */
-    #applyTheme() {
+    #applyTheme () {
       const sky = this.shadowRoot.querySelector('.sky')
       const ground = this.shadowRoot.querySelector('.ground')
       const grassContainer = this.shadowRoot.querySelector('.grass-container')
@@ -871,15 +1173,15 @@ customElements.define('milton-jump',
 
       // Remove old rules if there are any?
       for (let i = styleSheet.cssRules.length - 1; i >= 0; i--) {
-        if (styleSheet.cssRules[i].selectorText === '.grass-sprite' ||
-          styleSheet.cssRules[i].selectorText === '.cloud') {
-          styleSheet.deleteRule(i)
-        }
+        if (styleSheet.cssRules[i].selectorText === '.grass-sprite' || 
+        styleSheet.cssRules[i].selectorText === '.cloud') {
+      styleSheet.deleteRule(i)
       }
+    }
 
-      // New rules
-      if (this.#currentTheme.grassWidth) {
-        styleSheet.insertRule(`
+    // New rules
+    if (this.#currentTheme.grassWidth) {
+      styleSheet.insertRule(`
       .grass-sprite {
       position: absolute;
       bottom: 0;
@@ -887,9 +1189,9 @@ customElements.define('milton-jump',
       height: ${this.#currentTheme.grassHeight}px;
       }
       `, styleSheet.cssRules.length)
-      }
+    }
 
-      styleSheet.insertRule(`
+    styleSheet.insertRule(`
       .cloud {
       position: absolute;
       width: ${this.#currentTheme.cloudWidth}px;
@@ -904,7 +1206,7 @@ customElements.define('milton-jump',
      * @param {number} direction - -1 for left, 1 for right.
      * @private
      */
-    #changeLevel(direction) {
+    #changeLevel( direction) {
       this.#selectedThemeIndex += direction
 
       // Wrap around
@@ -932,42 +1234,42 @@ customElements.define('milton-jump',
  * Loads theme-specific images
  * @private
  */
-    #loadThemeImages() {
-      const themeImages = {
-        default: {
-          grass1: null,
-          grass2: null,
-          obstacle: 'images/bush.png',
-          cloud: 'images/cloud.png'
-        },
-        mountains: {
-          grass1: 'images/mountains1.png',
-          grass2: 'images/mountains2.png',
-          obstacle: 'images/nighttree.png',
-          cloud: 'images/star1.png'
-        },
-        desert: {
-          grass1: 'images/pyramid1.png',
-          grass2: 'images/pyramid2.png',
-          obstacle: 'images/cactus.png',
-          cloud: 'images/newcloud.png'
-        },
-        city: {
-          grass1: 'images/stockholmwater1.png',
-          grass2: 'images/stockholmwater2.png',
-          obstacle: 'images/trashcan.png',
-          cloud: 'images/newcloud.png'
-        }
-      }
-
-      const themeName = this.#availableThemes[this.#selectedThemeIndex]
-      const images = themeImages[themeName]
-
-      this.#grassImage1 = images.grass1
-      this.#grassImage2 = images.grass2
-      this.#obstacleImage = images.obstacle
-      this.#cloudImage = images.cloud
+#loadThemeImages() {
+  const themeImages = {
+    default: {
+      grass1: null, 
+      grass2: null,
+      obstacle: 'images/bush.png',
+      cloud: 'images/cloud.png'
+    },
+    mountains: {
+      grass1: 'images/mountains1.png',
+      grass2: 'images/mountains2.png',
+      obstacle: 'images/nighttree.png',
+      cloud: 'images/star1.png'
+    },
+    desert: {
+      grass1: 'images/pyramid1.png',
+      grass2: 'images/pyramid2.png',
+      obstacle: 'images/cactus.png',
+      cloud: 'images/newcloud.png'
+    },
+    city: {
+      grass1: 'images/stockholmwater1.png',
+      grass2: 'images/stockholmwater2.png',
+      obstacle: 'images/trashcan.png',
+      cloud: 'images/newcloud.png'
     }
+  }
+  
+  const themeName = this.#availableThemes[this.#selectedThemeIndex]
+  const images = themeImages[themeName]
+  
+  this.#grassImage1 = images.grass1
+  this.#grassImage2 = images.grass2
+  this.#obstacleImage = images.obstacle
+  this.#cloudImage = images.cloud
+}
 
     /**
      * Updates the level name display
@@ -1035,22 +1337,22 @@ customElements.define('milton-jump',
  * Starts the logo sprite animation (alternating between logo1 and logo2)
  * @private
  */
-    #startLogoAnimation() {
-      this.#logoIntervalId = setInterval(() => {
-        if (this.#currentLogoFrame === 1) {
-          this.#startLogo.src = this.#logo2
-          this.#currentLogoFrame = 2
-        } else {
-          this.#startLogo.src = this.#logo1
-          this.#currentLogoFrame = 1
-        }
-      }, 1100) // Byter bild varje sekund
+#startLogoAnimation() {
+  this.#logoIntervalId = setInterval(() => {
+    if (this.#currentLogoFrame === 1) {
+      this.#startLogo.src = this.#logo2
+      this.#currentLogoFrame = 2
+    } else {
+      this.#startLogo.src = this.#logo1
+      this.#currentLogoFrame = 1
     }
+  }, 1100) // Byter bild varje sekund
+}
 
     /**
      * Starts scrolling of grass while PLAYING gamestate is active.
      */
-    #startGrassScrolling() {
+    #startGrassScrolling () {
       if (!this.#currentTheme.grassWidth) return // Protects against null
 
       this.#grassScrollIntervalId = setInterval(() => {
@@ -1061,14 +1363,14 @@ customElements.define('milton-jump',
         for (let i = 0; i < this.#grassSprites.length; i++) {
           const grass = this.#grassSprites[i]
           grass.x -= speed
+        
 
+        // When grass is out of screen, move to right.
+        if (grass.x <= -grassWidth) {
+          grass.x = containerWidth
+        }
 
-          // When grass is out of screen, move to right.
-          if (grass.x <= -grassWidth) {
-            grass.x = containerWidth
-          }
-
-          grass.element.style.left = `${grass.x}px`
+        grass.element.style.left = `${grass.x}px`
         }
       }, 50)
     }
@@ -1076,7 +1378,7 @@ customElements.define('milton-jump',
     /**
      * Stops the grass scroll when game ends.
      */
-    #stopGrassScrolling() {
+    #stopGrassScrolling () {
       if (this.#grassScrollIntervalId) {
         clearInterval(this.#grassScrollIntervalId)
         this.#grassScrollIntervalId = null
@@ -1115,15 +1417,15 @@ customElements.define('milton-jump',
       }
 
       // For level selector
-      if (this.#gameState === 'WAITING' || this.#gameState === 'GAME_OVER') {
-        if (event.code === 'ArrowLeft') {
-          event.preventDefault()
-          this.#changeLevel(-1)
-        } else if (event.code === 'ArrowRight') {
-          event.preventDefault()
-          this.#changeLevel(1)
-        }
-      }
+     if (this.#gameState === 'WAITING' || this.#gameState === 'GAME_OVER') {
+  if (event.code === 'ArrowLeft') {
+    event.preventDefault()
+    this.#changeLevel(-1)
+  } else if (event.code === 'ArrowRight') {
+    event.preventDefault()
+    this.#changeLevel(1)
+  }
+}
     }
 
     /**
@@ -1133,29 +1435,22 @@ customElements.define('milton-jump',
      * @private
      */
     #handleTouch(event) {
-      // If click is on an arrow, ignore it here (handled separately)
+
+      // If click is on an arrow: 
       const target = event?.target
       if (target && (target.classList.contains('left-arrow') ||
         target.classList.contains('right-arrow') ||
         target.classList.contains('left-arrow-go') ||
-        target.classList.contains('right-arrow-go') ||
-        target.classList.contains('level-name') ||
-        target.classList.contains('level-name-go') ||
-        target.classList.contains('level-selector') ||
-        target.classList.contains('level-controls'))) {
+        target.classList.contains('right-arrow-go'))) {
         return
       }
-
-      // Check for PRE WAITING state first - hanteras nu i setupEventListeners
+      // Check for PRE WAITING state first
       if (this.#gameState === 'PRE_WAITING') {
-        return
-      }
-
+    this.#enterWaitingState()
+    return
+  }
       // Different outcomes based on game states:
       if (this.#gameState === 'WAITING') {
-        // Prevent this touch from also triggering a jump
-        event.preventDefault()
-        event.stopPropagation()
         // Start game
         this.#startGame()
       } else if (this.#gameState === 'PLAYING') {
@@ -1166,32 +1461,21 @@ customElements.define('milton-jump',
       }
     }
 
-
-
     /**
      * Starts the game.
      * Hides the startsecreen and initializes game loop.
      * 
      * @private
      */
-    async #startGame() {
+    #startGame() {
       // Change state
       this.#gameState = 'PLAYING'
 
-      // Load main theme if not loaded
-      if (!this.#mainThemeMusic) {
-        const mainMusicSrc = this.getAttribute('music2')
-        if (mainMusicSrc) {
-          this.#mainThemeMusic = await this.#loadAudio(mainMusicSrc)
-        }
-      }
+      // Start music
+      this.#updateMusic()
 
       // Hide start screen
       this.#startScreen.classList.add('hidden')
-
-      setTimeout(() => {
-        this.#updateMusic()
-      }, 50)
 
       // Running animation
       this.#startSpriteAnimation()
@@ -1712,8 +1996,8 @@ customElements.define('milton-jump',
 
       // Update high score component.
       if (this.#highScoreComponent) {
-        this.#highScoreComponent.setScore(this.#score)
-      }
+      this.#highScoreComponent.setScore(this.#score)
+}
     }
 
     /**
@@ -1744,18 +2028,12 @@ customElements.define('milton-jump',
         return
       }
 
-
-
       // Mark that we are jumping right now
       this.#isJumping = true
 
       // Switch to jump avatar
       if (this.#jumpImage) {
         this.#playerElement.src = this.#jumpImage
-      }
-
-      if (this.#gameState === 'WAITING') {
-        this.#startGame()
       }
 
       // Play the jump sound on jump
