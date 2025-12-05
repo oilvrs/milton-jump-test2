@@ -8,7 +8,7 @@
 const template = document.createElement('template')
 template.innerHTML = `
   <style>
- @import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
+ 
 @font-face {
   font-family: "Tiny5";
   src: url("./fonts/Tiny5.ttf") format("truetype");

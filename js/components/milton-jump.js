@@ -11,7 +11,6 @@ import './high-score.js'
 const template = document.createElement('template')
 template.innerHTML = `
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
     @font-face {
   font-family: "Tiny5";
   src: url("./fonts/Tiny5.ttf") format("truetype");
@@ -746,14 +745,14 @@ customElements.define('milton-jump',
         this.#mainMenuMusic = new Audio(menuMusicSrc)
         this.#mainMenuMusic.loop = true
         this.#mainMenuMusic.volume = 0.6
-        this.#mainMenuMusic.load() // Preload but don't play
+        this.#mainMenuMusic.preload = 'none'
       }
 
       if (mainMusicSrc) {
         this.#mainThemeMusic = new Audio(mainMusicSrc)
         this.#mainThemeMusic.loop = true
         this.#mainThemeMusic.volume = 0.6
-        this.#mainThemeMusic.load() // Preload but don't play
+        this.#mainMenuMusic.preload = 'none'
       }
 
       this.#updateLevelDisplay()
