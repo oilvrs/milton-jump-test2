@@ -1134,17 +1134,6 @@ customElements.define('milton-jump',
      */
     #handleTouch(event) {
       // If click is on an arrow, ignore it here (handled separately)
-      const target = event?.target
-      if (target && (target.classList.contains('left-arrow') ||
-        target.classList.contains('right-arrow') ||
-        target.classList.contains('left-arrow-go') ||
-        target.classList.contains('right-arrow-go') ||
-        target.classList.contains('level-name') ||
-        target.classList.contains('level-name-go') ||
-        target.classList.contains('level-selector') ||
-        target.classList.contains('level-controls'))) {
-        return
-      }
 
       // Check for PRE WAITING state first - hanteras nu i setupEventListeners
       if (this.#gameState === 'PRE_WAITING') {
