@@ -804,17 +804,17 @@ customElements.define('milton-jump',
 
       // Load music now if not loaded
       if (!this.#mainMenuMusic) {
-        const menuMusicSrc = this.getAttribute('music1')
-        if (menuMusicSrc) {
-          this.#mainMenuMusic = this.#loadAudio(menuMusicSrc)
-        }
-      }
-
-      // Delay music start slightly to ensure it plays on mobile
-      setTimeout(() => {
+    const menuMusicSrc = this.getAttribute('music1')
+    if (menuMusicSrc) {
+      this.#loadAudio(menuMusicSrc).then(audio => {
+        this.#mainMenuMusic = audio
         this.#updateMusic()
-      }, 100)
+      })
     }
+  } else {
+    this.#updateMusic()
+  }
+}
 
     /**
      * Loads audio files dynamically
@@ -1179,12 +1179,18 @@ customElements.define('milton-jump',
       this.#gameState = 'PLAYING'
 
       // Load main theme if not loaded
-      if (!this.#mainThemeMusic) {
-        const mainMusicSrc = this.getAttribute('music2')
-        if (mainMusicSrc) {
-          this.#mainThemeMusic = this.#loadAudio(mainMusicSrc)
-        }
-      }
+        if (!this.#mainThemeMusic) {
+    const mainMusicSrc = this.getAttribute('music2')
+    if (mainMusicSrc) {
+      this.#loadAudio(mainMusicSrc).then(audio => {
+        this.#mainThemeMusic = audio
+        this.#updateMusic()
+      })
+    }
+  } else {
+    this.#updateMusic()
+  }
+
 
       // Hide start screen
       this.#startScreen.classList.add('hidden')
