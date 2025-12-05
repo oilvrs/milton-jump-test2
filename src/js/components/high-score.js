@@ -293,42 +293,34 @@ customElements.define('high-score',
      * Called when component is added to DOM
      */
     connectedCallback() {
-      // Load high scores from localStorage
-      this.#loadHighScores()
-      this.#displayHighScores()
+  this.#loadHighScores()
+  this.#displayHighScores()
 
-      // Fix?
-     this.addEventListener("click", e => e.stopPropagation())
- this.addEventListener("touchstart", e => e.stopPropagation())
-  this.addEventListener("touchend", e => e.stopPropagation())
+  // ⛔ Stoppa ALLA pointer-events från att nå spelet
+  this.addEventListener("pointerdown", e => e.stopPropagation())
+  this.addEventListener("pointerup", e => e.stopPropagation())
+  this.addEventListener("click", e => e.stopPropagation())
 
-  // Prevent submit button from triggering game touch handlers
-  this.#submitBtn.addEventListener("click", e => e.stopPropagation())
-  this.#submitBtn.addEventListener("touchstart", e => e.stopPropagation())
+  // Submit score
+  this.#submitBtn.addEventListener("pointerdown", (e) => {
+    e.stopPropagation()
+    this.#submitHighScore()
+  })
 
-      // Submit score listener
-      this.#submitBtn.addEventListener('click', () => {
-        this.#submitHighScore()
-      })
+  // Clear all scores
+  this.#clearBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    this.#clearScores()
+  })
 
-      // Clear all scores
-      this.#clearBtn.addEventListener('click', () => {
-        this.#clearScores()
-      })
-
-      this.#clearBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        this.#clearScores()
-      })
-      
-      // Enter key to submit
-      this.#nameInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          this.#submitHighScore()
-        }
-      })
+  // Enter = submit
+  this.#nameInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      this.#submitHighScore()
     }
+  })
+}
 
     /**
  * Clears all high scores

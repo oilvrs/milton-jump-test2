@@ -180,32 +180,28 @@ template.innerHTML = `
       left: 20px;
       font-family: 'Tiny5',  sans-serif;
       font-size: 30px;
-      color: red;
+      animation: colorchange 1s steps(1) infinite;
       font-weight: 150;
       z-index: 10;
       opacity: 0;
       transition: opacity 0.5s;
     }
 
-     @keyframes blink {
-      0%, 50%, 100% { opacity: 1; }
-      25%, 75% { opacity: 0.3; }
+     @keyframes blink { 0%, 50%, 100% { opacity: 1; } 25%, 75% { opacity: 0.3; }
     }
 
-     @keyframes float {
-      0% { transform: translateY(0); }
+     @keyframes float { 0% { transform: translateY(0); }
       50% { transform: translateY(-30px); }
       100% { transform: translateY(0); }
     }
 
-    @keyframes breatheLogo {
-  0%, 100% { 
-    transform: scale(1);
-  }
-  50% { 
-    transform: scale(1.05);
-  }
+    @keyframes breatheLogo { 0%, 100% { 
+    transform: scale(1); } 50% { transform: scale(1.05);}
 }
+
+@keyframes colorchange { 0% { color: red; } 25% { color: blue; } 50% { color: rgba(247, 198, 38, 1); }
+        75% { color: rgba(19, 169, 54, 1); } 100% { color: red; }
+    }
 
      /* Game Over skärm */
     .game-over-screen {
@@ -595,362 +591,60 @@ customElements.define('milton-jump',
     }
 
     #currentTheme = null
-
-    /**
-     * GAME STATE - 'waiting', 'playing', 'game_over'
-     * 
-     * @type {string}
-     */
-
     #gameState = 'PRE_WAITING'
-
-    /**
-     * Reference to the player icon (image)
-     * 
-     * @type {HTMLImageElement}
-     */
-
     #playerElement
-
-    /**
-     * Reference to game container.
-     * 
-     * @type {HTMLDivElement}
-     */
     #gameContainer
-
-    /**
-   * Reference to grass container.
-   * 
-   * @type {HTMLDivElement}
-   */
     #grassContainer
-
-    /**
-     * Reference to pre-waiting-screen
-     * 
-     * @type {HTMLDivElement}
-     */
     #preWaitingScreen
-
-    /**
-     * Reference to bone text element
-     * 
-     * @type {HTMLDivElement}
-     */
     #boneTextElement
-
-    /**
- * Reference to start logo element.
- * @type {HTMLImageElement}
- */
-#startLogo
-
-/**
- * Image src for logo 1.
- * @type {string}
- */
-#logo1
-
-/**
- * Image src for logo 2.
- * @type {string}
- */
-#logo2
-
-/**
- * Current logo frame (1 or 2)
- * @type {number}
- */
-#currentLogoFrame = 1
-
-/**
- * Interval ID for logo animation
- * @type {number}
- */
-#logoIntervalId
-
-    /**
-     * Keeps track on if player is jumping
-     * If true - player cannot jump again (no double jumping allowed)
-     * 
-     * @type {HTMLImageElement}
-     */
-
+    #startLogo
+    #logo1
+    #logo2
+    #currentLogoFrame = 1
+    #logoIntervalId
     #isJumping = false
-
-    /**
-     * Sound that plays while you jump
-     * 
-     * @type {HTMLAudioElement}
-     */
-
     #jumpSound
-
-    /**
-     * Main menu music
-     * Plays during WAITING stage.
-     * 
-     * @type {HTMLAudioElement}
-     */
     #mainMenuMusic
-
-    /**
-     * Game theme music 
-     * Plays during PLAYING stage.
-     */
     #mainThemeMusic
-
-    /**
-     * sound that plays when you eat a bone
-     * 
-     * @type {HTMLAudioElement}
-     */
     #eatSound
-
-    /**
-     * Array with obstacles present on screen.
-     * 
-     * @type {Array<{element: HTMLImageElement, x: number}>}
-     */
     #obstacles = []
-
-    /**
-     * Array with grass.
-     * 
-     * @type {Array<{element: HTMLImageElement, x: number}>}
-     */
     #grass = []
-
-    /**
-     * Array with bones giving extra points.
-     * 
-     * @type {Array<{element: HTMLImageElement, x: number}>}
-     */
     #bones = []
-
-    /**
-     * Array with all clouds
-     * 
-     * @type {Array<{element: HTMLImageElement, x: number}>}
-     */
     #clouds = []
-
-    /**
-     * Array with all grass sprites
-     * 
-     * @type {Array<{element: HTMLImageElement, x: number}>}
-     */
     #grassSprites = []
-
-    /**
-     * Reference to high-score component
-     * @type {HTMLElement}
-     */
     #highScoreComponent
-
-    /**
-     * SRC for obstacles image
-     * 
-     * @type {string}
-     */
     #obstacleImage
-
-    /**
-     * SRC for bones image.
-     * 
-     * @type {string}
-     */
     #boneImage
-
-    /**
-     * SRC for grass image 1.
-     * 
-     * @type {string}
-     */
     #grassImage1
-
-    /**
-     * SRC for grass image 2.
-     * @type {string}
-     */
     #grassImage2
-
-    /**
-     * SRC for cloud image
-     * 
-     * @type {string}
-     */
     #cloudImage
-
-    /**
-     * Image src for run avatar 1.
-     * 
-     * @type {string}
-     */
     #runImage1
-
-    /**
-     * Image src for run avatar 2.
-     * 
-     * @type {string}
-     */
     #runImage2
-
-    /**
-     * Image src for run avatar 3.
-     * 
-     * @type {string}
-     */
     #runImage3
-
-    /**
-     * Image src for jump avatar.
-     * 
-     * @type {string}
-     */
     #jumpImage
-
-    /**
-     * Image src for eating
-     * 
-     * @private
-     */
     #eatImage
-
-    /**
-     * What run frame is displayed right now. (1 or 2)
-     * 
-     * @type {number}
-     */
     #currentRunFrame = 0
-
-    /**
-     * What grass image is displayed right now. (1 or 2)
-     * 
-     * @type {number}
-     */
     #currentGrassFrame = 1
-
-    /**
-     * Interval-id for sprite animation
-     * 
-     * @type {number}
-     */
     #spriteIntervalId
-
-    /**
-     * Interval-id for grass animation.
-     * 
-     * @type {number}
-     */
     #grassSpriteIntervalId
-
-    /**
-     * Interval id for when grass should scroll.
-     * 
-     * @type {number}
-     */
     #grassScrollIntervalId
-
-    /**
-     * ID for animation frame (used to stop game loop)
-     * 
-     * @type {number}
-     */
     #animationFrameId
-
-    /**
-     * ID for cloud animation frame
-     * 
-     * @type {number}
-     */
     #cloudAnimationId
-
-    /**
-     * Timestamp for next obstacle.
-     * 
-     * @type {number}
-     */
     #nextObstacleTime = 0
-
-    /**
-     * Timestamp for next bone.
-     * 
-     * @type {number}
-     */
     #nextBoneTime = 0
-
-    /**
-     * Timestamp for next cloud.
-     * 
-     * @type {number}
-     */
     #nextCloudTime = 0
-    /**
-     * Score tracker
-     * 
-     * @type {number}
-     */
     #score = 0
-
-    /**
-     * Reference to score element
-     * 
-     * @type {HTMLDivElement}
-     */
     #scoreElement
-
-    /**
-     * Fast mode
-     * 
-     * @type {string}
-     */
     #fastMode
-
-    /**
-     * Reference to start screen
-     * 
-     * @type {HTMLDivElement}
-     */
     #startScreen
-
-    /**
-     * Reference to GAME OVER screen
-     * 
-     * @type {HTMLDivElement}
-     */
     #gameOverScreen
-
-    /**
-     * Avaliable themes
-     * @type {Array<string>}
-     */
     #availableThemes = ['default', 'mountains', 'desert', 'city']
-
-    /**
-     * Current selected theme index
-     * @type {number}
-     */
     #selectedThemeIndex = 0
-
-    /**
-     * Reference to level name element.
-     * @type {HTMLDivElement}
-     */
     #levelNameElement
-
-    /**
-     * Reference to level name element in GAME OVER
-     * 
-     * @type {HTMLDivElement}
-     */
     #levelNameElementGO
 
     /**
-     * Sets up a new instance of game
-     * 
-     * @constructor
+     * Creates instance of MILTON_JUMP
      */
     constructor() {
       super()
@@ -988,17 +682,11 @@ customElements.define('milton-jump',
       this.#runImage2 = this.getAttribute('run2')
       this.#runImage3 = this.getAttribute('run3')
       this.#eatImage = this.getAttribute('eatimage')
-
-      // Grass images
       this.#grassImage1 = this.getAttribute('grass1')
       this.#grassImage2 = this.getAttribute('grass2')
-
-      // Jump avatar
       this.#jumpImage = this.getAttribute('jump')
-
-      // Music (menu and main)
-     this.#mainMenuMusic = null
-     this.#mainThemeMusic = null
+      this.#mainMenuMusic = null
+      this.#mainThemeMusic = null
 
       // Initial run image (run1)
       if (this.#runImage1) {
@@ -1064,92 +752,40 @@ customElements.define('milton-jump',
      * Sets up all event listeners
      * @private
      */
-    #setupEventListeners() {
-  // Add level query selector listeners
+   #setupEventListeners() {
   const leftArrow = this.shadowRoot.querySelector('.left-arrow')
   const rightArrow = this.shadowRoot.querySelector('.right-arrow')
   const leftArrowGO = this.shadowRoot.querySelector('.left-arrow-go')
   const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
 
-  if (leftArrow) {
-    leftArrow.addEventListener('click', (e) => {
+  const bindArrow = (el, direction) => {
+    if (!el) return
+    el.addEventListener("pointerdown", (e) => {
       e.stopPropagation()
-      this.#changeLevel(-1)
+      this.#changeLevel(direction)
     })
-    leftArrow.addEventListener('touchstart', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(-1)
-    }, { passive: false })
   }
 
-  if (rightArrow) {
-    rightArrow.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.#changeLevel(1)
-    })
-    rightArrow.addEventListener('touchstart', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(1)
-    }, { passive: false })
-  }
+  bindArrow(leftArrow, -1)
+  bindArrow(rightArrow, 1)
+  bindArrow(leftArrowGO, -1)
+  bindArrow(rightArrowGO, 1)
 
-  // Game Over screen level selectors
-  if (leftArrowGO) {
-    leftArrowGO.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.#changeLevel(-1)
-    })
-    leftArrowGO.addEventListener('touchstart', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(-1)
-    }, { passive: false })
-  }
-
-  if (rightArrowGO) {
-    rightArrowGO.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.#changeLevel(1)
-    })
-    rightArrowGO.addEventListener('touchstart', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      this.#changeLevel(1)
-    }, { passive: false })
-  }
-
-  // Listen to button presses
+  // Keyboard
   document.addEventListener('keydown', (event) => {
     this.#handleKeyPress(event)
   })
 
-  // Touch / click support - använd både click och touchend för bättre kompatibilitet
+  // Game container touch/click → ersatt av pointerdown
   if (this.#gameContainer) {
-    // Använd touchend istället för touchstart för bättre responsivitet
-    this.#gameContainer.addEventListener('touchend', (event) => {
-      event.preventDefault()
-      this.#handleTouch(event)
-    }, { passive: false })
-
-    // Behåll click för desktop
-    this.#gameContainer.addEventListener('click', (event) => {
-      this.#handleTouch(event)
+    this.#gameContainer.addEventListener("pointerdown", (e) => {
+      this.#handleTouch(e)
     })
   }
 
-  // Special handling för pre-waiting screen
+  // Pre-waiting screen
   if (this.#preWaitingScreen) {
-    this.#preWaitingScreen.addEventListener('touchend', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      if (this.#gameState === 'PRE_WAITING') {
-        this.#enterWaitingState()
-      }
-    }, { passive: false })
-
-    this.#preWaitingScreen.addEventListener('click', (e) => {
+    this.#preWaitingScreen.addEventListener("pointerdown", (e) => {
       e.stopPropagation()
       if (this.#gameState === 'PRE_WAITING') {
         this.#enterWaitingState()
