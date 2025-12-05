@@ -739,6 +739,23 @@ customElements.define('milton-jump',
 
       this.#currentTheme = this.#themeConfig[this.#availableThemes[this.#selectedThemeIndex]]
       this.#applyTheme()
+      const menuMusicSrc = this.getAttribute('music1')
+      const mainMusicSrc = this.getAttribute('music2')
+
+      if (menuMusicSrc) {
+        this.#mainMenuMusic = new Audio(menuMusicSrc)
+        this.#mainMenuMusic.loop = true
+        this.#mainMenuMusic.volume = 0.6
+        this.#mainMenuMusic.load() // Preload but don't play
+      }
+
+      if (mainMusicSrc) {
+        this.#mainThemeMusic = new Audio(mainMusicSrc)
+        this.#mainThemeMusic.loop = true
+        this.#mainThemeMusic.volume = 0.6
+        this.#mainThemeMusic.load() // Preload but don't play
+      }
+
       this.#updateLevelDisplay()
       this.#loadThemeImages()
 
@@ -757,6 +774,7 @@ customElements.define('milton-jump',
       const rightArrow = this.shadowRoot.querySelector('.right-arrow')
       const leftArrowGO = this.shadowRoot.querySelector('.left-arrow-go')
       const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
+
 
       const bindArrow = (el, direction) => {
         if (!el) return
@@ -802,56 +820,12 @@ customElements.define('milton-jump',
       this.#preWaitingScreen.classList.add('hidden')
       this.#startScreen.classList.remove('hidden')
 
-      // Load music now if not loaded
-      if (!this.#mainMenuMusic) {
-    const menuMusicSrc = this.getAttribute('music1')
-    if (menuMusicSrc) {
-      this.#loadAudio(menuMusicSrc).then(audio => {
-        this.#mainMenuMusic = audio
-        this.#updateMusic()
-      })
-    }
-  } else {
-    this.#updateMusic()
-  }
-}
-
-    /**
-     * Loads audio files dynamically
-     * @param {string} src - Audio file path
-     * @returns {Promise<HTMLAudioElement>}
-     * @private
-     */
-    #loadAudio(src) {
-      return new Promise((resolve) => {
-        const audio = new Audio()
-        audio.addEventListener('canplaythrough', () => resolve(audio), { once: true })
-        audio.loop = true
-        audio.volume = 0.6
-        audio.src = src
-      })
-    }
-
-    /**
-     * Handles music in application.
-     */
-    #updateMusic() {
-      // Stop both songs.
-      if (this.#mainMenuMusic) this.#mainMenuMusic.pause();
-      if (this.#mainThemeMusic) this.#mainThemeMusic.pause();
-
-      if (this.#gameState === 'WAITING') {
-        if (this.#mainMenuMusic) {
-          this.#mainMenuMusic.currentTime = 0;
-          this.#mainMenuMusic.play().catch(() => { });
-        }
-      }
-
-      if (this.#gameState === 'PLAYING') {
-        if (this.#mainThemeMusic) {
-          this.#mainThemeMusic.currentTime = 0;
-          this.#mainThemeMusic.play().catch(() => { });
-        }
+      // Try to play menu music immediately after user interaction
+      if (this.#mainMenuMusic) {
+        this.#mainMenuMusic.currentTime = 0
+        this.#mainMenuMusic.play().catch(err => {
+          console.log('Menu music autoplay prevented:', err)
+        })
       }
     }
     /**
@@ -1166,8 +1140,6 @@ customElements.define('milton-jump',
       }
     }
 
-
-
     /**
      * Starts the game.
      * Hides the startsecreen and initializes game loop.
@@ -1179,25 +1151,20 @@ customElements.define('milton-jump',
       this.#gameState = 'PLAYING'
 
       // Load main theme if not loaded
-        if (!this.#mainThemeMusic) {
-    const mainMusicSrc = this.getAttribute('music2')
-    if (mainMusicSrc) {
-      this.#loadAudio(mainMusicSrc).then(audio => {
-        this.#mainThemeMusic = audio
-        this.#updateMusic()
-      })
-    }
-  } else {
-    this.#updateMusic()
-  }
+      // Stop menu music and play game music
+      if (this.#mainMenuMusic) {
+        this.#mainMenuMusic.pause()
+      }
 
+      if (this.#mainThemeMusic) {
+        this.#mainThemeMusic.currentTime = 0
+        this.#mainThemeMusic.play().catch(err => {
+          console.log('Game music autoplay prevented:', err)
+        })
+      }
 
       // Hide start screen
       this.#startScreen.classList.add('hidden')
-
-      setTimeout(() => {
-        this.#updateMusic()
-      }, 50)
 
       // Running animation
       this.#startSpriteAnimation()
@@ -1700,7 +1667,10 @@ customElements.define('milton-jump',
       this.#gameState = 'GAME_OVER'
 
       // Stop music
-      this.#updateMusic()
+      if (this.#mainThemeMusic) {
+        this.#mainThemeMusic.pause()
+      }
+
 
       // Stop sprite animation
       this.#stopSpriteAnimation()
