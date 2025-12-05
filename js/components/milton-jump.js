@@ -1134,6 +1134,17 @@ customElements.define('milton-jump',
      */
     #handleTouch(event) {
       // If click is on an arrow, ignore it here (handled separately)
+      const target = event?.target
+      if (target && (target.classList.contains('left-arrow') ||
+        target.classList.contains('right-arrow') ||
+        target.classList.contains('left-arrow-go') ||
+        target.classList.contains('right-arrow-go') ||
+        target.classList.contains('level-name') ||
+        target.classList.contains('level-name-go') ||
+        target.classList.contains('level-selector') ||
+        target.classList.contains('level-controls'))) {
+        return
+      }
 
       // Check for PRE WAITING state first - hanteras nu i setupEventListeners
       if (this.#gameState === 'PRE_WAITING') {
@@ -1142,6 +1153,9 @@ customElements.define('milton-jump',
 
       // Different outcomes based on game states:
       if (this.#gameState === 'WAITING') {
+        // Prevent this touch from also triggering a jump
+        event.preventDefault()
+        event.stopPropagation()
         // Start game
         this.#startGame()
       } else if (this.#gameState === 'PLAYING') {
@@ -1160,7 +1174,7 @@ customElements.define('milton-jump',
      * 
      * @private
      */
-    async #startGame() {
+    #startGame() {
       // Change state
       this.#gameState = 'PLAYING'
 
@@ -1168,7 +1182,7 @@ customElements.define('milton-jump',
       if (!this.#mainThemeMusic) {
         const mainMusicSrc = this.getAttribute('music2')
         if (mainMusicSrc) {
-          this.#mainThemeMusic = await this.#loadAudio(mainMusicSrc)
+          this.#mainThemeMusic = this.#loadAudio(mainMusicSrc)
         }
       }
 
