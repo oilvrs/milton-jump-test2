@@ -748,51 +748,155 @@ customElements.define('milton-jump',
       this.#startCloudAnimation()
     }
 
-    /**
-     * Sets up all event listeners
-     * @private
-     */
-    #setupEventListeners() {
-      const leftArrow = this.shadowRoot.querySelector('.left-arrow')
-      const rightArrow = this.shadowRoot.querySelector('.right-arrow')
-      const leftArrowGO = this.shadowRoot.querySelector('.left-arrow-go')
-      const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
+   /**
+ * Sets up all event listeners - FOOLPROOF VERSION
+ * @private
+ */
+#setupEventListeners() {
+  // Level selector arrows - start screen
+  const leftArrow = this.shadowRoot.querySelector('.left-arrow')
+  const rightArrow = this.shadowRoot.querySelector('.right-arrow')
+  const leftArrowGO = this.shadowRoot.querySelector('.left-arrow-go')
+  const rightArrowGO = this.shadowRoot.querySelector('.right-arrow-go')
 
-      const bindArrow = (el, direction) => {
-        if (!el) return
-        el.addEventListener("pointerdown", (e) => {
-          e.stopPropagation()
-          this.#changeLevel(direction)
-        })
+  // Bind arrow clicks with stopPropagation
+  const bindArrow = (el, direction) => {
+    if (!el) return
+    el.addEventListener("click", (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      e.stopImmediatePropagation()
+      this.#changeLevel(direction)
+    })
+  }
+
+  bindArrow(leftArrow, -1)
+  bindArrow(rightArrow, 1)
+  bindArrow(leftArrowGO, -1)
+  bindArrow(rightArrowGO, 1)
+
+  // Keyboard events
+  window.addEventListener('keydown', (event) => {
+    this.#handleKeyPress(event)
+  })
+
+  // PRE-WAITING screen - separate listener
+  if (this.#preWaitingScreen) {
+    this.#preWaitingScreen.addEventListener("click", (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (this.#gameState === 'PRE_WAITING') {
+        this.#enterWaitingState()
       }
+    })
+  }
 
-      bindArrow(leftArrow, -1)
-      bindArrow(rightArrow, 1)
-      bindArrow(leftArrowGO, -1)
-      bindArrow(rightArrowGO, 1)
+  // Main game container - only for WAITING, PLAYING, GAME_OVER
+  if (this.#gameContainer) {
+    this.#gameContainer.addEventListener("click", (e) => {
+      this.#handleTouch(e)
+    })
+  }
+}
 
-      // Keyboard
-      document.addEventListener('keydown', (event) => {
-        this.#handleKeyPress(event)
-      })
+/**
+ * Handles keyboard input - FOOLPROOF VERSION
+ * @param {KeyboardEvent} event - The keyboard event
+ * @private
+ */
+#handleKeyPress(event) {
+  // PRE_WAITING: Any key enters waiting state
+  if (this.#gameState === 'PRE_WAITING') {
+    event.preventDefault()
+    this.#enterWaitingState()
+    return
+  }
 
-      // Game container touch/click → ersatt av pointerdown
-      if (this.#gameContainer) {
-        this.#gameContainer.addEventListener("pointerdown", (e) => {
-          this.#handleTouch(e)
-        })
-      }
-
-      // Pre-waiting screen
-      if (this.#preWaitingScreen) {
-        this.#preWaitingScreen.addEventListener("pointerdown", (e) => {
-          e.stopPropagation()
-          if (this.#gameState === 'PRE_WAITING') {
-            this.#enterWaitingState()
-          }
-        })
-      }
+  // Arrow keys for level selection (only in WAITING or GAME_OVER)
+  if (this.#gameState === 'WAITING' || this.#gameState === 'GAME_OVER') {
+    if (event.code === 'ArrowLeft') {
+      event.preventDefault()
+      this.#changeLevel(-1)
+      return
+    } else if (event.code === 'ArrowRight') {
+      event.preventDefault()
+      this.#changeLevel(1)
+      return
     }
+  }
+
+  // Space key handling
+  if (event.code === 'Space') {
+    event.preventDefault()
+
+    if (this.#gameState === 'WAITING') {
+      this.#startGame()
+    } else if (this.#gameState === 'PLAYING') {
+      this.#jump()
+    } else if (this.#gameState === 'GAME_OVER') {
+      this.#restartGame()
+    }
+  }
+}
+
+/**
+ * Handles touch/click input - FOOLPROOF VERSION
+ * @param {Event} event - The touch or click event
+ * @private
+ */
+#handleTouch(event) {
+  const target = event?.target
+
+  // Block if clicking on UI elements
+  if (target && (
+    target.classList.contains('left-arrow') ||
+    target.classList.contains('right-arrow') ||
+    target.classList.contains('left-arrow-go') ||
+    target.classList.contains('right-arrow-go') ||
+    target.classList.contains('level-name') ||
+    target.classList.contains('level-name-go') ||
+    target.classList.contains('level-selector') ||
+    target.classList.contains('level-controls') ||
+    target.classList.contains('pre-waiting-screen') ||
+    target.classList.contains('pre-waiting-text') ||
+    target.classList.contains('start-logo')
+  )) {
+    return
+  }
+
+  // WAITING state: Start game (prevent double-trigger)
+  if (this.#gameState === 'WAITING') {
+    event.preventDefault()
+    event.stopPropagation()
+    event.stopImmediatePropagation()
+    
+    // Add small delay to ensure state change completes
+    setTimeout(() => {
+      this.#startGame()
+    }, 50)
+    return
+  }
+
+  // PLAYING state: Jump
+  if (this.#gameState === 'PLAYING') {
+    event.preventDefault()
+    this.#jump()
+    return
+  }
+
+  // GAME_OVER state: Restart
+  if (this.#gameState === 'GAME_OVER') {
+    event.preventDefault()
+    event.stopPropagation()
+    event.stopImmediatePropagation()
+    
+    setTimeout(() => {
+      this.#restartGame()
+    }, 50)
+    return
+  }
+}
+
     /**
      * Moves from PRE_WAITING to WAITING
      * @private
@@ -1082,91 +1186,6 @@ customElements.define('milton-jump',
         this.#grassScrollIntervalId = null
       }
     }
-
-    /**
-     * Handles key presses and checks if space was pressed (for jumping).
-     * 
-     * @param {KeyboardEvent} event - The keyboard event in question
-     * @private
-     */
-    #handleKeyPress(event) {
-      // Check for PRE_WAITING state first
-      if (this.#gameState === 'PRE_WAITING') {
-        event.preventDefault()
-        this.#enterWaitingState()
-        return
-      }
-      // Check if pressed key was space
-      // event.code is the name of the key that was pressed
-      if (event.code === 'Space') {
-        // Stops space from scrolling the page
-        event.preventDefault()
-
-        // Different outcomes based on game states:
-        if (this.#gameState === 'WAITING') {
-          // Start game
-          this.#startGame()
-        } else if (this.#gameState === 'PLAYING') {
-          // Jump
-          this.#jump()
-        } else if (this.#gameState === 'GAME_OVER') {
-          this.#restartGame()
-        }
-      }
-
-      // For level selector
-      if (this.#gameState === 'WAITING' || this.#gameState === 'GAME_OVER') {
-        if (event.code === 'ArrowLeft') {
-          event.preventDefault()
-          this.#changeLevel(-1)
-        } else if (event.code === 'ArrowRight') {
-          event.preventDefault()
-          this.#changeLevel(1)
-        }
-      }
-    }
-
-    /**
-     * Handles touch/click for mobile units
-     * same logic as handleKeyPress but for touch
-     * 
-     * @private
-     */
-    #handleTouch(event) {
-      // If click is on an arrow, ignore it here (handled separately)
-      const target = event?.target
-      if (target && (target.classList.contains('left-arrow') ||
-        target.classList.contains('right-arrow') ||
-        target.classList.contains('left-arrow-go') ||
-        target.classList.contains('right-arrow-go') ||
-        target.classList.contains('level-name') ||
-        target.classList.contains('level-name-go') ||
-        target.classList.contains('level-selector') ||
-        target.classList.contains('level-controls'))) {
-        return
-      }
-
-      // Check for PRE WAITING state first - hanteras nu i setupEventListeners
-      if (this.#gameState === 'PRE_WAITING') {
-        return
-      }
-
-      // Different outcomes based on game states:
-      if (this.#gameState === 'WAITING') {
-        // Prevent this touch from also triggering a jump
-        event.preventDefault()
-        event.stopPropagation()
-        // Start game
-        this.#startGame()
-      } else if (this.#gameState === 'PLAYING') {
-        // Jump
-        this.#jump()
-      } else if (this.#gameState === 'GAME_OVER') {
-        this.#restartGame()
-      }
-    }
-
-
 
     /**
      * Starts the game.
