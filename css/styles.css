@@ -10,11 +10,14 @@
       width: 100%;
       min-height: 100%;
       overscroll-behavior-x: none; /* Förhindra horisontell "bounce" */
+      background-color: #6dcff6;
     }
     
     body {
       margin: 0;
       padding: 0;
       overflow-x: hidden; /* Bara förhindra horisontell scroll */
+      background-color: #6dcff6;
     }
+    
     
