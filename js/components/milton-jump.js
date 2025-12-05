@@ -797,7 +797,7 @@ customElements.define('milton-jump',
      * Moves from PRE_WAITING to WAITING
      * @private
      */
-    async #enterWaitingState() {
+    #enterWaitingState() {
       this.#gameState = 'WAITING'
       this.#preWaitingScreen.classList.add('hidden')
       this.#startScreen.classList.remove('hidden')
@@ -806,7 +806,7 @@ customElements.define('milton-jump',
       if (!this.#mainMenuMusic) {
         const menuMusicSrc = this.getAttribute('music1')
         if (menuMusicSrc) {
-          this.#mainMenuMusic = await this.#loadAudio(menuMusicSrc)
+          this.#mainMenuMusic = this.#loadAudio(menuMusicSrc)
         }
       }
 
