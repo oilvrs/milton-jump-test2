@@ -1142,9 +1142,6 @@ customElements.define('milton-jump',
 
       // Different outcomes based on game states:
       if (this.#gameState === 'WAITING') {
-        // Prevent this touch from also triggering a jump
-        event.preventDefault()
-        event.stopPropagation()
         // Start game
         this.#startGame()
       } else if (this.#gameState === 'PLAYING') {
