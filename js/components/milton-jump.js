@@ -1203,6 +1203,11 @@ customElements.define('milton-jump',
      * @private
      */
     #restartGame() {
+
+      // Remove game over music
+       if (this.#gameOverMusic) {
+        this.#gameOverMusic.pause()
+      }
       // remove all current obstacles
       this.#obstacles.forEach(obstacle => {
         obstacle.element.remove()
