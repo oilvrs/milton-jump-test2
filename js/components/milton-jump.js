@@ -607,6 +607,7 @@ customElements.define('milton-jump',
     #jumpSound
     #mainMenuMusic
     #mainThemeMusic
+    #gameOverMusic
     #eatSound
     #obstacles = []
     #grass = []
@@ -688,6 +689,7 @@ customElements.define('milton-jump',
       this.#jumpImage = this.getAttribute('jump')
       this.#mainMenuMusic = null
       this.#mainThemeMusic = null
+      this.#gameOverMusic = null
 
       // Initial run image (run1)
       if (this.#runImage1) {
@@ -742,6 +744,7 @@ customElements.define('milton-jump',
       this.#applyTheme()
       const menuMusicSrc = this.getAttribute('music1')
       const mainMusicSrc = this.getAttribute('music2')
+      const gameOverMusicSrc = this.getAttribute('music3')
 
       if (menuMusicSrc) {
         this.#mainMenuMusic = new Audio(menuMusicSrc)
@@ -755,6 +758,13 @@ customElements.define('milton-jump',
         this.#mainThemeMusic.loop = true
         this.#mainThemeMusic.volume = 0.6
         this.#mainMenuMusic.preload = 'none'
+      }
+
+       if (gameOverMusicSrc) {
+        this.#gameOverMusic= new Audio(gameOverMusicSrc)
+        this.#gameOverMusic.loop = true
+        this.#gameOverMusic.volume = 0.6
+        this.#gameOverMusic.preload = 'none'
       }
 
       this.#updateLevelDisplay()
@@ -1670,6 +1680,13 @@ customElements.define('milton-jump',
       // Stop music
       if (this.#mainThemeMusic) {
         this.#mainThemeMusic.pause()
+      }
+
+      if (this.#gameOverMusic) {
+        this.#gameOverMusic.currentTime = 0
+        this.#gameOverMusic.play().catch(err => {
+          console.log('Game music autoplay prevented:', err)
+        })
       }
 
 
